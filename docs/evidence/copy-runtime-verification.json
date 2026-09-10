@@ -1,28 +1,28 @@
 {
   "status": "PASSED",
   "label": "NO REAL DATA — isolated runtime lifecycle test; ZERO TRANSACTIONS",
-  "started_at": "2026-09-10T06:37:07.042Z",
+  "started_at": "2026-09-10T19:33:34.337Z",
   "checks": [
     {
       "name": "Actual authenticated server, supervisor and copy worker started",
-      "server_pid": 30,
-      "worker_pid": 42,
+      "server_pid": 16,
+      "worker_pid": 28,
       "source": "actual runtime processes",
       "live_signer": "NOT_CONFIGURED"
     },
     {
       "name": "Copy heartbeat and process uptime progressed with SSE closed and no HTTP requests",
-      "closed_at": 1789022227634,
-      "observation_ms": 7209,
-      "before_copy_at": 1789022227582,
-      "after_copy_at": 1789022234597,
-      "before_uptime_ms": 17,
-      "after_uptime_ms": 7032
+      "closed_at": 1789068815192,
+      "observation_ms": 7205,
+      "before_copy_at": 1789068814955,
+      "after_copy_at": 1789068821959,
+      "before_uptime_ms": 16,
+      "after_uptime_ms": 7020
     },
     {
       "name": "Supervisor replaced only the identified test worker; virtual capital, position, ledger and filled action survived",
-      "old_pid": 42,
-      "new_pid": 66,
+      "old_pid": 28,
+      "new_pid": 52,
       "recovery_event_id": 4,
       "cash_raw": "97999999999999997",
       "positions": 1,
@@ -33,7 +33,7 @@
     },
     {
       "name": "Full API/server restart preserved STOPPED copy state, cancellation and exact virtual balances",
-      "worker_pid": 102
+      "worker_pid": 88
     },
     {
       "name": "Global emergency API also fenced the copy module without deleting virtual holdings"
@@ -49,5 +49,5 @@
     "Synthetic virtual position/ledger fixture; does not validate market data, trading performance, real swaps or 24-hour uptime."
   ],
   "result_path": "/workspace/sites/meme-lab/docs/evidence/copy-runtime-verification.json",
-  "duration_seconds": 24.729
+  "duration_seconds": 25.444
 }

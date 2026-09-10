@@ -106,7 +106,8 @@ export async function writeHeartbeat(e){
  const connected=health.some(h=>['CONNECTED','RPC_ONLY'].includes(h.status)&&Date.now()-h.updated_at<15000);
  const active=c.enabled&&await e.store.setting('engine_desired')==='RUNNING';
  const headLag=head!==null&&latest?Math.max(0,head-latest.number):null;
- const status=await e.store.setting('copy_reconciliation_required')?'RECONCILIATION_REQUIRED':!active?'STOPPED':!connected?'CONNECTING':headLag>3?'LAGGING':lag>3?'RECOVERING':'WATCHING';
- await e.store.set('copy_runtime',{status,version:'0.3.2',at:Date.now(),boot_at:e.boot,uptime_ms:Date.now()-e.boot,cursor,observed_head:head,latest_scanned_block:latest?.number??null,last_scanned_at:latest?.at??null,block_lag:lag,head_lag:headLag,missing_blocks:lag===null?null:Math.max(0,lag-scanned),queue,pending_jobs:queue.filter(q=>q.state==='QUEUED').reduce((n,q)=>n+q.n,0),last_rpc:e.rpc?.metrics.slice(-16)??[]});
+ const staleRead=!latest||Date.now()-latest.at>15000;
+ const status=await e.store.setting('copy_reconciliation_required')?'RECONCILIATION_REQUIRED':!active?'STOPPED':!connected?'CONNECTING':staleRead?'DATA_STALE':headLag>3?'LAGGING':lag>3?'RECOVERING':'WATCHING';
+ await e.store.set('copy_runtime',{status,version:'0.4.1',at:Date.now(),boot_at:e.boot,uptime_ms:Date.now()-e.boot,cursor,observed_head:head,latest_scanned_block:latest?.number??null,last_scanned_at:latest?.at??null,block_lag:lag,head_lag:headLag,missing_blocks:lag===null?null:Math.max(0,lag-scanned),queue,pending_jobs:queue.filter(q=>q.state==='QUEUED').reduce((n,q)=>n+q.n,0),rpc_budget:e.rpc?.status?.()??[],last_rpc:e.rpc?.metrics.slice(-16)??[]});
  if(c.execution_wallet&&!e.walletBusy&&Date.now()-(e.lastWallet??0)>10000){e.walletBusy=true;e.lastWallet=Date.now();e.wallet().catch(error=>e.report('WALLET',cleanError(error))).finally(()=>e.walletBusy=false);}
 }

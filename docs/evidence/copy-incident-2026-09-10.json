@@ -1,0 +1,38 @@
+{
+  "source_sha256": "eb4ad3bc1663d8512f9cb221c93998b648b7a3e76ba0d2d359d1849ca5cd6aa2",
+  "source": "User diagnostic export, 2026-09-10",
+  "exported_at": 1789067633302,
+  "observations": {
+    "runtime_heartbeat_age_ms": 1626,
+    "latest_block_read_age_ms": 57066,
+    "uptime_ms": 35704531,
+    "runtime_status": "CONNECTING",
+    "missing_blocks": 51071,
+    "attempted_actions": 12,
+    "states": {
+      "REJECTED": 12
+    },
+    "rejections": {
+      "SMART_FEE_ON_TRANSFER_OR_UNKNOWN_UNSUPPORTED": 3,
+      "SIGNAL_EXPIRED": 4,
+      "NO_EXECUTABLE_ROUTE": 4,
+      "TOKEN_SAFETY_FAILED": 1
+    },
+    "positions": 0,
+    "ledger_rows": 0,
+    "execution_receipts": 0,
+    "provider_count": 1,
+    "websocket_configured": false,
+    "live_enabled": false,
+    "auto_armed": false,
+    "last_rpc_statuses": {
+      "ERROR": 16
+    }
+  },
+  "limitations": [
+    "Finite exported action/feed windows; not an audit of every lifetime request.",
+    "No exact underlying route errors or GoPlus failed checks were stored by the old executor.",
+    "Export proves fresh heartbeat and delayed RPC at this moment; not a permanently dead worker.",
+    "No profitable or funded execution is established."
+  ]
+}
