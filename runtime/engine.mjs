@@ -9,7 +9,7 @@ import {ExecutionEngine} from '../core/execution/engine.mjs';
 import {checkHealth,adapter,RH} from '../core/providers/chains.mjs';
 import {pollWallet,ingestWalletTransaction,updateWatchedPatterns} from '../core/watchers.mjs';
 import {inspectSolanaPool,inspectEvmPool} from '../core/pool-discovery.mjs';
-import {recoverEngine,enqueue,claimJob,emit} from '../core/engine-state.mjs';
+import {recoverEngine,enqueue,claimScheduledJob,emit} from '../core/engine-state.mjs';
 import {id,safeError,json} from '../core/util.mjs';
 
 const {db,store,options}=await runtimeContext();const owner=id();let closing=false,ready=false,streamsActive=false,lastRefresh=0,lastMaintain=0,heartbeatBusy=false;
@@ -77,9 +77,7 @@ async function schedule(){
  await recurring('paper-exits','PAPER_EXITS',{},5000);await recurring('scan','SCAN',{},config.scan_interval_ms);await recurring('health','HEALTH',{},15000);await recurring('reconcile','RECONCILE',{},5000);await recurring('learning','LEARNING',{},60000);if((await store.setting('training_config'))?.enabled)await recurring('training-market','TRAINING_MARKET',{},15000);await recurring('evm-catchup','EVM_CATCHUP',{},30000);
  for(const w of await store.all('SELECT * FROM watched_wallets WHERE enabled=1'))await recurring('watch:'+w.wallet_id,'WALLET_POLL',{wallet_id:w.wallet_id},w.catchup_before?5000:config.wallet_interval_ms);
  while(active.size<config.concurrency){
-  const critical=['PAPER_EXITS','RECONCILE'];
-  const reserve=config.concurrency>1&&active.size>=config.concurrency-1&&![...active.values()].some(job=>critical.includes(job.type));
-  const job=await claimJob(store,owner,reserve?critical:null);if(!job)break;perform(job).catch(e=>{lastError=safeError(e);});
+  const job=await claimScheduledJob(store,owner,[...active.values()].map(job=>job.type),config.concurrency);if(!job)break;perform(job).catch(e=>{lastError=safeError(e);});
  }
  if(Date.now()-lastMaintain>3600000){lastMaintain=Date.now();const cutoff=Date.now()-config.retention_days*86400000;
   await store.run('DELETE FROM engine_events WHERE at<?',cutoff);await store.run("DELETE FROM engine_jobs WHERE state='DONE' AND updated_at<? AND type IN ('WALLET_TX','SOLANA_POOL','EVM_POOL')",cutoff);
