@@ -58,12 +58,27 @@ export async function enqueue(store,key,type,payload={},delay=0,repeat=false){
  const now=Date.now();const r=await store.run(`INSERT INTO engine_jobs(id,type,payload,state,available_at,created_at,updated_at) VALUES (?,?,?,'QUEUED',?,?,?) ON CONFLICT(id) DO UPDATE SET state='QUEUED',payload=excluded.payload,attempts=0,available_at=excluded.available_at,updated_at=excluded.updated_at,error=NULL WHERE engine_jobs.state IN ('DONE','FAILED') AND ?=1`,key,type,JSON.stringify(payload),now+delay,now,now,repeat?1:0);return r.changes===1;
 }
 export async function claimJob(store,owner,types=null){
- const now=Date.now();const filter=types?.length?' AND type IN ('+types.map(()=>'?').join(',')+')':'';
+ const now=Date.now();const filter=types?.length?' AND j.type IN ('+types.map(()=>'?').join(',')+')':'';
  // Prices have a finite observation window. Polling, provider checks and fitting
  // must also run while the historical transaction queue is continuously nonempty.
- const row=await store.get("SELECT id FROM engine_jobs WHERE state='QUEUED' AND available_at<=?"+filter+" ORDER BY CASE type WHEN 'RECONCILE' THEN 0 WHEN 'PAPER_EXITS' THEN 1 WHEN 'TRAINING_MARKET' THEN 2 WHEN 'SCAN' THEN 3 WHEN 'WALLET_POLL' THEN 4 WHEN 'HEALTH' THEN 5 WHEN 'LEARNING' THEN 5 WHEN 'TRAINING' THEN 5 WHEN 'WALLET_TX' THEN 6 ELSE 7 END,available_at,id LIMIT 1",now,...(types??[]));if(!row)return null;
+ // Alternate wallets before choosing a recent observation within each wallet.
+ // Persisted sequence numbers keep turns distinct even within the same millisecond.
+ // Arrival metadata affects scheduling only; receipts still establish trade time.
+ const row=await store.get(`SELECT j.id FROM engine_jobs j
+ LEFT JOIN settings turn ON j.type='WALLET_TX' AND turn.key='wallet_job_turn:'||json_extract(j.payload,'$.wallet_id')
+ WHERE j.state='QUEUED' AND j.available_at<=?${filter}
+ ORDER BY CASE j.type WHEN 'RECONCILE' THEN 0 WHEN 'PAPER_EXITS' THEN 1 WHEN 'TRAINING_MARKET' THEN 2 WHEN 'SCAN' THEN 3 WHEN 'WALLET_POLL' THEN 4 WHEN 'HEALTH' THEN 5 WHEN 'LEARNING' THEN 5 WHEN 'TRAINING' THEN 5 WHEN 'WALLET_TX' THEN 6 ELSE 7 END,
+ CASE WHEN j.type='WALLET_TX' THEN COALESCE(CAST(turn.value AS INTEGER),0) ELSE 0 END,
+ CASE WHEN j.type='WALLET_TX' AND json_extract(j.payload,'$.observed_at') BETWEEN ? AND ?
+  AND (json_extract(j.payload,'$.source')='WEBSOCKET' OR (json_extract(j.payload,'$.source')='RPC' AND json_extract(j.payload,'$.occurred_at') BETWEEN ? AND ?)) THEN 0 ELSE 1 END,
+ j.available_at,j.id LIMIT 1`,now,...(types??[]),now-180000,now,now-180000,now);if(!row)return null;
  const r=await store.run("UPDATE engine_jobs SET state='RUNNING',owner=?,locked_at=?,updated_at=?,attempts=attempts+1 WHERE id=? AND state='QUEUED'",owner,now,now,row.id);if(!r.changes)return null;
- const job=await store.get('SELECT * FROM engine_jobs WHERE id=?',row.id);return {...job,payload:json(job.payload,{})};
+ const job=await store.get('SELECT * FROM engine_jobs WHERE id=?',row.id),payload=json(job.payload,{});
+ if(job.type==='WALLET_TX'&&typeof payload.wallet_id==='string'&&payload.wallet_id)await store.batch([
+  ["INSERT INTO settings(key,value,updated_at) VALUES ('wallet_job_sequence','1',?) ON CONFLICT(key) DO UPDATE SET value=CAST(CAST(settings.value AS INTEGER)+1 AS TEXT),updated_at=excluded.updated_at",[now]],
+  ["INSERT INTO settings(key,value,updated_at) SELECT ?,value,? FROM settings WHERE key='wallet_job_sequence' ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at",['wallet_job_turn:'+payload.wallet_id,now]]
+ ]);
+ return {...job,payload};
 }
 export async function claimScheduledJob(store,owner,activeTypes,concurrency){
  // In observation-only mode the idle execution slot can capture training prices.

@@ -41,13 +41,13 @@ export class NetworkStream{
  async message(bytes){
   const msg=JSON.parse(bytes.toString());if(msg.id){const context=this.pending.get(msg.id);this.pending.delete(msg.id);if(msg.error){this.subscriptionErrors.set(msg.id,safeError(Error(JSON.stringify(msg.error))));await this.status('DEGRADED',[...this.subscriptionErrors.values()].join('; '));return;}if(context)this.subscriptions.set(String(msg.result),context);return;}
   const context=this.subscriptions.get(String(msg.params?.subscription));if(!context)return;
-  const result=msg.params.result;this.lastEvent=Date.now();
+  const result=msg.params.result,observedAt=Date.now();this.lastEvent=observedAt;
   if(context.kind==='block'){
    const block=this.chain.family==='solana'?String(result.slot):String(parseInt(result.number,16));
    if(Date.now()-this.lastPersist>=2000){this.lastPersist=Date.now();await this.status(this.subscriptionErrors.size||this.pending.size?'DEGRADED':'CONNECTED',this.subscriptionErrors.size?[...this.subscriptionErrors.values()].join('; '):this.pending.size?'Suscripciones pendientes':null,block);await emit(this.store,'BLOCK','Nuevo '+(this.chain.family==='solana'?'slot':'bloque'),{block,provider:new URL(this.url).hostname,transport:'WebSocket',hash:result.hash??null},this.chain.id);}
   }else{
    const backlog=await this.store.get("SELECT COUNT(*) n FROM engine_jobs WHERE state IN ('QUEUED','RUNNING')");if(backlog.n>=1000)await this.status('DEGRADED','Cola acumulada: revisar capacidad del proveedor; eventos guardados');
-   if(context.kind==='wallet'&&!result.value?.err)await enqueue(this.store,'wallet:'+context.wallet_id+':'+result.value.signature,'WALLET_TX',{wallet_id:context.wallet_id,hash:result.value.signature});
+   if(context.kind==='wallet'&&!result.value?.err)await enqueue(this.store,'wallet:'+context.wallet_id+':'+result.value.signature,'WALLET_TX',{wallet_id:context.wallet_id,hash:result.value.signature,source:'WEBSOCKET',observed_at:observedAt});
    if(context.kind==='pool'){
     if(this.chain.family==='solana'){const v=result.value;if(!v?.err&&(v.logs??[]).some(l=>/Instruction: (CreatePool|Initialize|InitializeWithPermission)\b/.test(l)))await enqueue(this.store,'pool:'+v.signature,'SOLANA_POOL',{hash:v.signature});if(context.program&&v?.signature)await this.store.set('sol-log-head:'+context.program,v.signature);}
     else if(!result.removed)await enqueue(this.store,'pool:'+result.transactionHash+':'+result.logIndex,'EVM_POOL',{chain:this.chain.id,log:result});
