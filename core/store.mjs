@@ -2,13 +2,14 @@ import {decrypt} from './util.mjs';
 import {schema,defaults,initialChains} from './schema.mjs';
 import {engineSchema,engineDefaults,emit} from './engine-state.mjs';
 import {copySchema,copyDefaults,targetDefaults,TARGET} from './copy/schema.mjs';
+import {learningSchema,learningDefaults} from './learning/schema.mjs';
 export class Store {
  constructor(driver,options={}){this.driver=driver;this.options=options;}
  async all(sql,...args){const rows=await this.driver.all(sql,args);for(const r of rows)for(const field of ['rpc_url','ws_url'])if(r[field]?.startsWith('enc:'))r[field]=await decrypt(r[field].slice(4),this.options.encryptionKey);return rows;}
  async get(sql,...args){return (await this.all(sql,...args))[0]??null;}
  async run(sql,...args){return this.driver.run(sql,args);}
  async batch(statements){return this.driver.batch(statements);}
- async init(){await this.driver.exec(schema+engineSchema+copySchema);for(const [key,value] of Object.entries({...defaults,...engineDefaults,...copyDefaults}))await this.run('INSERT OR IGNORE INTO settings VALUES (?,?,?)',key,JSON.stringify(value),Date.now());for(const c of initialChains)await this.run('INSERT OR IGNORE INTO chains VALUES (?,?,?,?,?,?)',...c);await this.run('INSERT OR IGNORE INTO watched_wallets(wallet_id) SELECT id FROM wallets');await this.run('INSERT OR IGNORE INTO copy_targets VALUES (?,?,?,?,?,?)',TARGET,TARGET,'Narrativas BNB',1,JSON.stringify(targetDefaults),Date.now());}
+ async init(){await this.driver.exec(schema+engineSchema+copySchema+learningSchema);for(const [key,value] of Object.entries({...defaults,...engineDefaults,...copyDefaults,...learningDefaults}))await this.run('INSERT OR IGNORE INTO settings VALUES (?,?,?)',key,JSON.stringify(value),Date.now());for(const c of initialChains)await this.run('INSERT OR IGNORE INTO chains VALUES (?,?,?,?,?,?)',...c);await this.run('INSERT OR IGNORE INTO watched_wallets(wallet_id) SELECT id FROM wallets');await this.run('INSERT OR IGNORE INTO copy_targets VALUES (?,?,?,?,?,?)',TARGET,TARGET,'Narrativas BNB',1,JSON.stringify(targetDefaults),Date.now());}
  async setting(key){const v=await this.get('SELECT value FROM settings WHERE key=?',key);return v?JSON.parse(v.value):null;}
  async set(key,value){await this.run('INSERT INTO settings VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at',key,JSON.stringify(value),Date.now());}
  async log(category,event,detail={},entity=null,level='INFO'){await this.run('INSERT INTO audit_log(created_at,level,category,event,entity_id,detail) VALUES (?,?,?,?,?,?)',Date.now(),level,category,event,entity,JSON.stringify(detail));}

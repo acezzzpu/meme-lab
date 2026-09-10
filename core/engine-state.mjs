@@ -47,7 +47,7 @@ export async function controlEngine(store,action,options={}){
 export async function recoverEngine(store,owner){
  // Only the process holding the engine lease may recover jobs and scanner work.
  await store.run("UPDATE engine_jobs SET state='QUEUED',owner=NULL,locked_at=NULL,available_at=?,updated_at=? WHERE state='RUNNING' OR (state='FAILED' AND type IN ('WALLET_TX','SOLANA_POOL','EVM_POOL','SOLANA_CATCHUP'))",Date.now(),Date.now());
- await store.run("DELETE FROM settings WHERE key='scanner_lease'");
+ await store.run("DELETE FROM settings WHERE key IN ('scanner_lease','training_lease','training_capture_lease')");
  await store.set('epoch',(await store.setting('epoch'))+1);
  await store.run("UPDATE orders SET state='CANCELLED',error='Cancelled before broadcast during recovery',updated_at=? WHERE state IN ('CREATED','QUOTED','BUILT','SIMULATED','AWAITING_APPROVAL','APPROVED','SIGNED')",Date.now());
  await store.run("UPDATE reservations SET status='RELEASED' WHERE order_id IN (SELECT id FROM orders WHERE state='CANCELLED')");
@@ -59,7 +59,7 @@ export async function enqueue(store,key,type,payload={},delay=0,repeat=false){
 }
 export async function claimJob(store,owner,types=null){
  const now=Date.now();const filter=types?.length?' AND type IN ('+types.map(()=>'?').join(',')+')':'';
- const row=await store.get("SELECT id FROM engine_jobs WHERE state='QUEUED' AND available_at<=?"+filter+" ORDER BY CASE type WHEN 'RECONCILE' THEN 0 WHEN 'PAPER_EXITS' THEN 1 WHEN 'SCAN' THEN 2 WHEN 'WALLET_TX' THEN 3 ELSE 4 END,available_at LIMIT 1",now,...(types??[]));if(!row)return null;
+ const row=await store.get("SELECT id FROM engine_jobs WHERE state='QUEUED' AND available_at<=?"+filter+" ORDER BY CASE type WHEN 'RECONCILE' THEN 0 WHEN 'PAPER_EXITS' THEN 1 WHEN 'SCAN' THEN 2 WHEN 'TRAINING_MARKET' THEN 3 WHEN 'WALLET_TX' THEN 4 ELSE 5 END,available_at LIMIT 1",now,...(types??[]));if(!row)return null;
  const r=await store.run("UPDATE engine_jobs SET state='RUNNING',owner=?,locked_at=?,updated_at=?,attempts=attempts+1 WHERE id=? AND state='QUEUED'",owner,now,now,row.id);if(!r.changes)return null;
  const job=await store.get('SELECT * FROM engine_jobs WHERE id=?',row.id);return {...job,payload:json(job.payload,{})};
 }

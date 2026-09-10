@@ -23,7 +23,7 @@ const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http:
  const panelNavigation=req.method==='GET'&&req.headers['sec-fetch-mode']==='navigate'&&req.headers['sec-fetch-dest']==='document'&&url.pathname!=='/api'&&!url.pathname.startsWith('/api/')&&url.pathname!=='/healthz';
  if(!bearer&&req.headers['sec-fetch-site']==='cross-site'&&!panelNavigation)return respond({error:'CROSS_SITE_REQUEST_REJECTED'},403);
  let body={};if(req.method!=='GET'){let text='';for await(const chunk of req){text+=chunk;if(text.length>100000)throw Error('PAYLOAD_TOO_LARGE');}body=text?JSON.parse(text):{};}
- if(url.pathname==='/healthz'){const beat=await store.setting('engine_heartbeat'),desired=await store.setting('engine_desired');return respond({api:'OK',engine:desired==='RUNNING'?(beat&&Date.now()-beat.at<15000?beat.state:'OFFLINE'):'STOPPED'},desired==='RUNNING'&&(!beat||Date.now()-beat.at>=15000)?503:200);}
+ if(url.pathname==='/healthz'){const beat=await store.setting('engine_heartbeat'),desired=await store.setting('engine_desired');return respond({api:'OK',release:'0.4.0-training',engine:desired==='RUNNING'?(beat&&Date.now()-beat.at<15000?beat.state:'OFFLINE'):'STOPPED'},desired==='RUNNING'&&(!beat||Date.now()-beat.at>=15000)?503:200);}
  if(url.pathname==='/api/auth/login'){
   if(req.method!=='POST')return respond({error:'METHOD_NOT_ALLOWED'},405);
   if(!safeEqual(String(body.token??''),adminToken))return respond({error:'INVALID_TOKEN'},401);

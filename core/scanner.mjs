@@ -1,3 +1,4 @@
+import {featureError} from './learning/model.mjs';
 import {DexScreenerProvider,recordMarketError} from './providers/market.mjs';
 import {checkHealth,adapter,SOL,USDC,RH} from './providers/chains.mjs';
 import {evaluate} from './strategy.mjs';
@@ -28,7 +29,8 @@ export async function scanOnce(store,options={}){
   const positions=await store.all('SELECT DISTINCT t.chain,t.address FROM positions p JOIN tokens t ON t.id=p.token_id WHERE p.closed_at IS NULL');
   const config=await store.setting('engine_config'),cursor=await store.setting('scanner_cursor')??0;
   const queue=marketQueue({chains,positions,discovered,existing,cursor,limit:config?.max_tokens??12});await store.set('scanner_cursor',cursor+Math.max(1,queue.length-positions.length-2));
-  const versions=await store.all("SELECT v.*,s.name FROM strategy_versions v JOIN strategies s ON s.id=v.strategy_id WHERE v.id IN (SELECT version_id FROM runs WHERE status IN ('RUNNING','LOSS_LIMIT')) OR v.version=(SELECT MAX(v2.version) FROM strategy_versions v2 WHERE v2.strategy_id=v.strategy_id) LIMIT 20");
+  const versions=await store.all("SELECT v.*,s.name FROM strategy_versions v JOIN strategies s ON s.id=v.strategy_id WHERE v.id IN (SELECT version_id FROM runs WHERE status IN ('RUNNING','LOSS_LIMIT')) OR (v.stage!='TRAINED_REJECTED' AND v.version=(SELECT MAX(v2.version) FROM strategy_versions v2 WHERE v2.strategy_id=v.strategy_id)) ORDER BY CASE WHEN v.id IN (SELECT version_id FROM runs WHERE status IN ('RUNNING','LOSS_LIMIT')) THEN 0 ELSE 1 END,v.created_at DESC LIMIT 20");
+  const activePaperVersions=new Set((await store.all("SELECT version_id FROM runs WHERE mode='PAPER' AND status IN ('RUNNING','LOSS_LIMIT')")).map(r=>r.version_id));
   const signals=[];let dispatched=0,marketUnavailable=false;const mode=await store.setting('mode');await emit(store,'SCAN','Ciclo de mercado iniciado',{tokens:queue.length,open_position_tokens:positions.length});
   for(let i=0;i<queue.length;i+=2){
    if(Date.now()-started>90000){await emit(store,'ERROR','Ciclo acotado por latencia: continúa en el siguiente trabajo');break;}
@@ -36,7 +38,14 @@ export async function scanOnce(store,options={}){
     try{
      const tokenId=await market.record(store,t.chainId,t.tokenAddress);let token=await store.get('SELECT * FROM tokens WHERE id=?',tokenId),metadataAttempted=false;
      processed++;const snap=await store.get('SELECT * FROM market_snapshots WHERE token_id=? ORDER BY received_at DESC LIMIT 1',tokenId);const pool=await store.get('SELECT * FROM pools WHERE id=?',snap.pool_id);
-     for(const v of versions){const params=json(v.parameters);if(params.chain!==t.chainId)continue;const began=Date.now(),result=evaluate(snap,params,token,pool),signal={id:id(),token_id:tokenId,version_id:v.id,observed_at:snap.received_at,...result};
+     for(const v of versions){const params=json(v.parameters);if(params.chain!==t.chainId)continue;
+      if(v.stage.startsWith('TRAINED_')){
+       if(!activePaperVersions.has(v.id)||v.stage!=='TRAINED_PAPER_ONLY'||featureError({...snap,pool_created:pool?.created_at}))continue;
+       // Same policy as the fitted model: first complete observation, one entry
+       // opportunity per token/version, persisted across reconnects and restarts.
+       const first=await store.run('INSERT OR IGNORE INTO learning_decisions VALUES (?,?,?,?)',v.id,tokenId,snap.id,Date.now());if(!first.changes)continue;
+      }
+      const began=Date.now(),result=evaluate(snap,params,token,pool),signal={id:id(),token_id:tokenId,version_id:v.id,observed_at:snap.received_at,...result};
       await store.run('INSERT INTO signals VALUES (?,?,?,?,?,?,?,?,?)',signal.id,tokenId,v.id,mode,result.decision,result.score,JSON.stringify(result.reasons),Date.now(),Date.now()-began);
       await emit(store,'DECISION',`${v.name} v${v.version} · ${result.decision} · score ${result.score}`,{signal_id:signal.id,token_address:t.tokenAddress,symbol:token.symbol,strategy:v.name,version:v.version,score:result.score,decision:result.decision,reasons:result.reasons,market_cap:snap.market_cap,price:snap.price},t.chainId,signal.id);
       if(result.decision==='SIGNAL'){

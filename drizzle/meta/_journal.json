@@ -29,6 +29,13 @@
       "when": 1789018937628,
       "tag": "0003_bnb_copy",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789031450017,
+      "tag": "0004_wallet_training",
+      "breakpoints": true
     }
   ]
 }

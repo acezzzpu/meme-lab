@@ -1,3 +1,4 @@
+import {trainIfReady,refreshTrainingMarket} from '../core/learning/pipeline.mjs';
 import {CopyEngine} from './copy/engine.mjs';
 import {runtimeContext} from './context.mjs';
 import {NetworkStreams} from './network-streams.mjs';
@@ -46,7 +47,9 @@ async function work(job){
   case 'RECONCILE':return reconcileWithPrices(store,current);
   case 'WALLET_POLL':return pollWallet(store,job.payload.wallet_id);
   case 'WALLET_TX':return ingestWalletTransaction(store,job.payload.wallet_id,job.payload.hash);
-  case 'LEARNING':return updateWatchedPatterns(store);
+  case 'LEARNING':await updateWatchedPatterns(store);return trainIfReady(store);
+  case 'TRAINING':return trainIfReady(store);
+  case 'TRAINING_MARKET':return refreshTrainingMarket(store);
   case 'SOLANA_CATCHUP':return solanaCatchup(job.payload);
   case 'SOLANA_POOL':return inspectSolanaPool(store,job.payload.hash);
   case 'EVM_POOL':return inspectEvmPool(store,job.payload.chain,job.payload.log);
@@ -71,7 +74,7 @@ async function schedule(){
  }
  const config=await store.setting('engine_config');
  if(Date.now()-lastRefresh>10000){lastRefresh=Date.now();await streams.refresh();streamsActive=true;}
- await recurring('paper-exits','PAPER_EXITS',{},5000);await recurring('scan','SCAN',{},config.scan_interval_ms);await recurring('health','HEALTH',{},15000);await recurring('reconcile','RECONCILE',{},5000);await recurring('learning','LEARNING',{},60000);await recurring('evm-catchup','EVM_CATCHUP',{},30000);
+ await recurring('paper-exits','PAPER_EXITS',{},5000);await recurring('scan','SCAN',{},config.scan_interval_ms);await recurring('health','HEALTH',{},15000);await recurring('reconcile','RECONCILE',{},5000);await recurring('learning','LEARNING',{},60000);if((await store.setting('training_config'))?.enabled)await recurring('training-market','TRAINING_MARKET',{},15000);await recurring('evm-catchup','EVM_CATCHUP',{},30000);
  for(const w of await store.all('SELECT * FROM watched_wallets WHERE enabled=1'))await recurring('watch:'+w.wallet_id,'WALLET_POLL',{wallet_id:w.wallet_id},w.catchup_before?5000:config.wallet_interval_ms);
  while(active.size<config.concurrency){
   const critical=['PAPER_EXITS','RECONCILE'];

@@ -183,11 +183,13 @@ try {
   }
   const streamedState = JSON.parse(streamed.match(/event: state\ndata: (.+)\n\n/)[1]);
   assert.equal(streamedState.runtime.location, 'cloud', 'SSE must report cloud runtime');
+  assert.equal(streamedState.training.ready, 0, 'SSE must expose actual training state');
   streamAbort.abort();
   await reader.cancel().catch(() => {});
   streamAbort = null;
   const before = await store.setting('engine_heartbeat');
   const closedAt = Date.now();
+  await store.run("INSERT INTO engine_jobs(id,type,payload,state,available_at,created_at,updated_at) VALUES ('training-without-browser','TRAINING','{}','QUEUED',?,?,?)",closedAt+1500,closedAt,closedAt);
   // Deliberately no HTTP or SQLite reads during this interval.
   await sleep(6500);
   const after = await store.setting('engine_heartbeat');
@@ -195,6 +197,11 @@ try {
   assert.ok(after.at > before.at + 3000, 'Heartbeat must advance without an SSE client');
   assert.ok(after.process_uptime_seconds > before.process_uptime_seconds + 3, 'Worker uptime must advance');
   record('Engine continues with SSE closed and no HTTP requests', {closed_at: closedAt, observation_ms: Date.now() - closedAt, heartbeat_advanced: true, uptime_advanced: true});
+  const trainedWithoutClient=await store.get("SELECT state,updated_at FROM engine_jobs WHERE id='training-without-browser'");
+  assert.equal(trainedWithoutClient.state,'DONE');
+  assert.ok(trainedWithoutClient.updated_at>=closedAt+1500);
+  assert.equal((await store.setting('training_status')).status,'COLLECTING');
+  record('Training worker executes with browser/SSE disconnected', {job:'DONE',completed_during_absence:true,result:'COLLECTING',fake_trained_model:false});
 
   const databaseBefore = await stat(databasePath);
   const oldCookie = cookie;

@@ -1,3 +1,4 @@
+import {verifiedWalletSwaps} from './learning/solana-evidence.mjs';
 import {adapter,USDC,RH} from './providers/chains.mjs';
 import {DexScreenerProvider} from './providers/market.mjs';
 import {solanaFlows} from './traders.mjs';
@@ -34,7 +35,7 @@ export async function ingestWalletTransaction(store,walletId,hash){
  const chain=await store.get('SELECT * FROM chains WHERE id=?',wallet.chain),a=adapter(chain);
  let raw,flows=[],occurred,block,fee,status;
  if(chain.family==='solana'){
-  raw=await a.transaction(hash);fail(raw?.meta,'TRANSACTION_NOT_AVAILABLE_YET');block=String(raw.slot);occurred=raw.blockTime?raw.blockTime*1000:null;fee=String(raw.meta.fee);status=raw.meta.err?'FAILED':'CONFIRMED';if(status==='CONFIRMED')flows=solanaFlows(raw,wallet.address);
+  raw=await a.transaction(hash);fail(raw?.meta,'TRANSACTION_NOT_AVAILABLE_YET');block=String(raw.slot);occurred=raw.blockTime?raw.blockTime*1000:null;fee=String(raw.meta.fee);status=raw.meta.err?'FAILED':'CONFIRMED';if(status==='CONFIRMED'){flows=solanaFlows(raw,wallet.address);for(const swap of verifiedWalletSwaps(raw,wallet.address)){const i=flows.findIndex(f=>f.token_address===swap.token_address);if(i>=0)flows[i]=swap;else flows.push(swap);}}
  }else{
   const [tx,receipt]=await Promise.all([a.transaction(hash),a.receipt(hash)]);fail(tx&&receipt?.blockNumber,'TRANSACTION_NOT_AVAILABLE_YET');const b=await a.rpc('eth_getBlockByNumber',[receipt.blockNumber,false]);raw={tx,receipt};block=String(parseInt(receipt.blockNumber,16));occurred=b?.timestamp?parseInt(b.timestamp,16)*1000:null;fee=String(BigInt(receipt.gasUsed)*BigInt(receipt.effectiveGasPrice??'0'));status=receipt.status==='0x1'?'CONFIRMED':'FAILED';if(status==='CONFIRMED')flows=await evmFlows(receipt,wallet.address);
  }
