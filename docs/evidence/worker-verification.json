@@ -1,0 +1,58 @@
+{
+  "at": "2026-09-10T00:19:30.197Z",
+  "browser_open": false,
+  "capital_usd": 100,
+  "run_id": "1595c2e5-68a1-4a70-8184-02f743e86451",
+  "initial_snapshots": 7,
+  "status": "PASSED",
+  "heartbeat": {
+    "at": 1788999710445,
+    "pid": 25,
+    "transport": "server loop"
+  },
+  "tick": {
+    "at": 1788999716825,
+    "duration_ms": 41390,
+    "tokens_processed": 2,
+    "signals": 0,
+    "discovery": "DexScreener token profiles + watched tokens; NOT all new chain pools"
+  },
+  "snapshots": 9,
+  "tokens": 7,
+  "decisions": 4,
+  "paper_entries": 0,
+  "paper_exits": 0,
+  "run": {
+    "id": "1595c2e5-68a1-4a70-8184-02f743e86451",
+    "mode": "PAPER",
+    "status": "RUNNING",
+    "capital_cents": 10000,
+    "cash_cents": 10000,
+    "version_id": "06a6b248-8f7d-45bf-b06a-f4890ae585e0",
+    "config": "{\"chain\":\"solana\",\"min_liquidity\":15000,\"min_market_cap\":10000,\"max_market_cap\":200000,\"max_age_minutes\":60,\"min_volume_5m\":10000,\"min_buy_sell_ratio\":1.8,\"min_change_5m\":4,\"stop_loss_pct\":15,\"take_profit_pct\":30,\"trailing_pct\":12,\"max_hold_minutes\":20,\"capital_cents\":10000,\"order_cents\":200,\"version_id\":\"06a6b248-8f7d-45bf-b06a-f4890ae585e0\",\"max_positions\":2,\"reserve_pct\":60,\"daily_loss_cents\":1000,\"slippage_bps\":100,\"network_fee_cents\":3,\"max_impact_pct\":2}",
+    "started_at": 1788999570193,
+    "stopped_at": null
+  },
+  "provider_health": [
+    {
+      "id": "solana",
+      "status": "CONNECTED",
+      "latency_ms": 11678,
+      "last_success": 1788999687113,
+      "last_attempt": 1788999687113,
+      "error": null,
+      "block": "445745805",
+      "requests": 2
+    },
+    {
+      "id": "market",
+      "status": "CONNECTED",
+      "latency_ms": 9681,
+      "last_success": 1788999706132,
+      "last_attempt": 1788999706132,
+      "error": null,
+      "block": null,
+      "requests": 9
+    }
+  ]
+}

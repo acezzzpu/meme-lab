@@ -1,0 +1,27 @@
+{
+  "at": "2026-09-10T03:25:29.482Z",
+  "status": "PASSED",
+  "checks": [
+    "Address-bar navigation serves UI",
+    "External link opens public UI",
+    "Built asset loads /assets/index-Bjtnde4V.js",
+    "Built asset loads /assets/index-BlaX8pwP.css",
+    "Missing asset returns 404 /assets/missing.js",
+    "Missing asset returns 404 /assets/missing.css",
+    "Missing asset returns 404 /assets/missing",
+    "External link to client route serves UI",
+    "Cross-site fetch stays blocked",
+    "Cross-site iframe stays blocked",
+    "Missing navigation metadata stays blocked",
+    "Cross-site POST to UI stays blocked",
+    "Reserved API root stays blocked",
+    "Unauthenticated API stays private",
+    "Cross-site login stays blocked even with correct token",
+    "Same-origin login succeeds",
+    "Authenticated same-origin state succeeds",
+    "Cross-site authenticated /api/lab/state stays blocked",
+    "Cross-site authenticated /api/stream stays blocked",
+    "Cross-origin mutation stays blocked",
+    "Same-origin control succeeds"
+  ]
+}

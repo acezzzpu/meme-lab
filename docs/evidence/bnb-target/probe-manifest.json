@@ -1,0 +1,36 @@
+{
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "target": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+  "probes": [
+    {
+      "method": "eth_blockNumber",
+      "params": [],
+      "received_at": "2026-09-10T04:54:19.138295+00:00",
+      "elapsed_ms": 10576,
+      "error": null
+    },
+    {
+      "method": "eth_getTransactionCount",
+      "params": [
+        "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+        "0x7367613"
+      ],
+      "received_at": "2026-09-10T04:54:28.967941+00:00",
+      "elapsed_ms": 9830,
+      "error": null
+    },
+    {
+      "method": "eth_getTransactionCount",
+      "params": [
+        "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+        "0x7364f03"
+      ],
+      "received_at": "2026-09-10T04:54:38.194989+00:00",
+      "elapsed_ms": 9227,
+      "error": {
+        "code": -32000,
+        "message": "missing trie node"
+      }
+    }
+  ]
+}

@@ -1,0 +1,420 @@
+{
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "target_transaction": "0x4f1caec89492578df33b2b1f7864d8155ac824a9c65f41fd66956630470dcb20",
+  "retrieved_at": "2026-09-10T05:28:00.381414+00:00",
+  "requested_block": "latest",
+  "data": [
+    {
+      "target": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+      "kind": "token",
+      "field": "decimals",
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+          "data": "0x313ce567"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000012"
+      }
+    },
+    {
+      "target": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+      "kind": "token",
+      "field": "symbol",
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+          "data": "0x95d89b41"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000457424e4200000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "target": "0x55d398326f99059ff775485246999027b3197955",
+      "kind": "token",
+      "field": "decimals",
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x55d398326f99059ff775485246999027b3197955",
+          "data": "0x313ce567"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000012"
+      }
+    },
+    {
+      "target": "0x55d398326f99059ff775485246999027b3197955",
+      "kind": "token",
+      "field": "symbol",
+      "jsonrpc": "2.0",
+      "id": 4,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x55d398326f99059ff775485246999027b3197955",
+          "data": "0x95d89b41"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045553445400000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "target": "0x7c8d5502b544ddaf8852fc46d1174e34876d545c",
+      "kind": "token",
+      "field": "decimals",
+      "jsonrpc": "2.0",
+      "id": 5,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x7c8d5502b544ddaf8852fc46d1174e34876d545c",
+          "data": "0x313ce567"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000012"
+      }
+    },
+    {
+      "target": "0x7c8d5502b544ddaf8852fc46d1174e34876d545c",
+      "kind": "token",
+      "field": "symbol",
+      "jsonrpc": "2.0",
+      "id": 6,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x7c8d5502b544ddaf8852fc46d1174e34876d545c",
+          "data": "0x95d89b41"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004424e433400000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "target": "0x7f161c27dc558170f797d856539689b48ae47777",
+      "kind": "token",
+      "field": "decimals",
+      "jsonrpc": "2.0",
+      "id": 7,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x7f161c27dc558170f797d856539689b48ae47777",
+          "data": "0x313ce567"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000012"
+      }
+    },
+    {
+      "target": "0x7f161c27dc558170f797d856539689b48ae47777",
+      "kind": "token",
+      "field": "symbol",
+      "jsonrpc": "2.0",
+      "id": 8,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x7f161c27dc558170f797d856539689b48ae47777",
+          "data": "0x95d89b41"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000053742414c4c000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "target": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+      "kind": "pool",
+      "field": "token0",
+      "jsonrpc": "2.0",
+      "id": 9,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": "0x00000000000000000000000055d398326f99059ff775485246999027b3197955"
+      }
+    },
+    {
+      "target": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+      "kind": "pool",
+      "field": "token1",
+      "jsonrpc": "2.0",
+      "id": 10,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": "0x000000000000000000000000bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
+      }
+    },
+    {
+      "target": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+      "kind": "pool",
+      "field": "factory",
+      "jsonrpc": "2.0",
+      "id": 11,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "result": "0x000000000000000000000000ca143ce32fe78f1f7019d7d551a6402fc5350c73"
+      }
+    },
+    {
+      "target": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+      "kind": "pool",
+      "field": "fee",
+      "jsonrpc": "2.0",
+      "id": 12,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+          "data": "0xddca3f43"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "error": {
+          "code": 3,
+          "message": "execution reverted: 0x",
+          "data": "0x"
+        }
+      }
+    },
+    {
+      "target": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+      "kind": "pool",
+      "field": "token0",
+      "jsonrpc": "2.0",
+      "id": 13,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "result": "0x00000000000000000000000055d398326f99059ff775485246999027b3197955"
+      }
+    },
+    {
+      "target": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+      "kind": "pool",
+      "field": "token1",
+      "jsonrpc": "2.0",
+      "id": 14,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "result": "0x0000000000000000000000007c8d5502b544ddaf8852fc46d1174e34876d545c"
+      }
+    },
+    {
+      "target": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+      "kind": "pool",
+      "field": "factory",
+      "jsonrpc": "2.0",
+      "id": 15,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "result": "0x0000000000000000000000000bfbcf9fa4f9c56b0f40a671ad40e0805a091865"
+      }
+    },
+    {
+      "target": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+      "kind": "pool",
+      "field": "fee",
+      "jsonrpc": "2.0",
+      "id": 16,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xbec6906a984f4695aca0f15bafa7de5eb45b54ab",
+          "data": "0xddca3f43"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 16,
+        "result": "0x00000000000000000000000000000000000000000000000000000000000009c4"
+      }
+    },
+    {
+      "target": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+      "kind": "pool",
+      "field": "token0",
+      "jsonrpc": "2.0",
+      "id": 17,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 17,
+        "result": "0x0000000000000000000000007c8d5502b544ddaf8852fc46d1174e34876d545c"
+      }
+    },
+    {
+      "target": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+      "kind": "pool",
+      "field": "token1",
+      "jsonrpc": "2.0",
+      "id": 18,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 18,
+        "result": "0x0000000000000000000000007f161c27dc558170f797d856539689b48ae47777"
+      }
+    },
+    {
+      "target": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+      "kind": "pool",
+      "field": "factory",
+      "jsonrpc": "2.0",
+      "id": 19,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 19,
+        "error": {
+          "code": 3,
+          "message": "execution reverted: 0x",
+          "data": "0x"
+        }
+      }
+    },
+    {
+      "target": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+      "kind": "pool",
+      "field": "fee",
+      "jsonrpc": "2.0",
+      "id": 20,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e",
+          "data": "0xddca3f43"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 20,
+        "error": {
+          "code": 3,
+          "message": "execution reverted: 0x",
+          "data": "0x"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,248 @@
+{
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "target_transaction": "0xba845a505ed4c648988d9c55435317fcef6014adb5cc3854c8e2b26b74f3c445",
+  "retrieved_at": "2026-09-10T05:33:15.374093+00:00",
+  "requested_block": "latest",
+  "data": [
+    {
+      "target": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+      "kind": "token",
+      "field": "decimals",
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+          "data": "0x313ce567"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000012"
+      }
+    },
+    {
+      "target": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+      "kind": "token",
+      "field": "symbol",
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+          "data": "0x95d89b41"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000044252455700000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "target": "0x8dd50128acb78102743ba65553f55793e9ee7d10",
+      "kind": "token",
+      "field": "decimals",
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x8dd50128acb78102743ba65553f55793e9ee7d10",
+          "data": "0x313ce567"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000012"
+      }
+    },
+    {
+      "target": "0x8dd50128acb78102743ba65553f55793e9ee7d10",
+      "kind": "token",
+      "field": "symbol",
+      "jsonrpc": "2.0",
+      "id": 4,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x8dd50128acb78102743ba65553f55793e9ee7d10",
+          "data": "0x95d89b41"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045465737400000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "target": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+      "kind": "pool",
+      "field": "token0",
+      "jsonrpc": "2.0",
+      "id": 5,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": "0x000000000000000000000000bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
+      }
+    },
+    {
+      "target": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+      "kind": "pool",
+      "field": "token1",
+      "jsonrpc": "2.0",
+      "id": 6,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": "0x000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f2159"
+      }
+    },
+    {
+      "target": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+      "kind": "pool",
+      "field": "factory",
+      "jsonrpc": "2.0",
+      "id": 7,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": "0x0000000000000000000000000bfbcf9fa4f9c56b0f40a671ad40e0805a091865"
+      }
+    },
+    {
+      "target": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+      "kind": "pool",
+      "field": "fee",
+      "jsonrpc": "2.0",
+      "id": 8,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "data": "0xddca3f43"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000002710"
+      }
+    },
+    {
+      "target": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+      "kind": "pool",
+      "field": "token0",
+      "jsonrpc": "2.0",
+      "id": 9,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": "0x0000000000000000000000008dd50128acb78102743ba65553f55793e9ee7d10"
+      }
+    },
+    {
+      "target": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+      "kind": "pool",
+      "field": "token1",
+      "jsonrpc": "2.0",
+      "id": 10,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": "0x000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f2159"
+      }
+    },
+    {
+      "target": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+      "kind": "pool",
+      "field": "factory",
+      "jsonrpc": "2.0",
+      "id": 11,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "result": "0x0000000000000000000000000bfbcf9fa4f9c56b0f40a671ad40e0805a091865"
+      }
+    },
+    {
+      "target": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+      "kind": "pool",
+      "field": "fee",
+      "jsonrpc": "2.0",
+      "id": 12,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+          "data": "0xddca3f43"
+        },
+        "latest"
+      ],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "result": "0x0000000000000000000000000000000000000000000000000000000000002710"
+      }
+    }
+  ]
+}

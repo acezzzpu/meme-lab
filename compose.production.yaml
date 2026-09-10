@@ -1,0 +1,48 @@
+services:
+  meme-lab:
+    build: .
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 25s
+    volumes:
+      - meme-data:/data
+      - meme-backups:/backups
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8787
+      DATA_DIR: /data
+      COOKIE_SECURE: 1
+      REMOTE_API_TOKEN: ${REMOTE_API_TOKEN:-}
+      ALLOWED_RPC_HOSTS: ${ALLOWED_RPC_HOSTS:-}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:8787/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env.production}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:?Set CONTACT_EMAIL in .env.production}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      meme-lab:
+        condition: service_healthy
+volumes:
+  meme-data:
+  meme-backups:
+  caddy-data:
+  caddy-config:

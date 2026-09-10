@@ -1,0 +1,39 @@
+{
+  "collected_at": "2026-09-10T04:59:33.968720+00:00",
+  "target": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+  "chain_id": 56,
+  "verified_target_transactions": 0,
+  "verified_target_receipts": 0,
+  "router_coverage": {
+    "sample_size": 0,
+    "coverage_pct": null,
+    "status": "NO_TRANSACTION_SAMPLE"
+  },
+  "connectivity": {
+    "rpc_providers": [
+      "https://bsc-dataseed.bnbchain.org",
+      "https://bsc-dataseed1.bnbchain.org"
+    ],
+    "block_fixture": "/tmp/bnb-probe-eth_getBlockByNumber.json",
+    "nonce_fixture": "/tmp/bnb-probe-eth_getTransactionCount.json",
+    "latest_observed_nonce": 46103,
+    "nonce_stable_window_utc": [
+      "2026-09-10T04:57:07.415267+00:00",
+      "2026-09-10T04:58:55.764335+00:00"
+    ]
+  },
+  "limits": [
+    "Official BNB public eth_getLogs returned -32005 limit exceeded; official docs say disabled",
+    "Official BNB nonce historical lookups returned -32000 missing trie node",
+    "Read-only 108-second observation window did not capture a new target-originated transaction",
+    "OnFinality public returned HTTP429 initial request",
+    "PublicNode, dRPC and Blockmachine returned HTTP403; not retried"
+  ],
+  "sources": [
+    "https://docs.bnbchain.org/bnb-smart-chain/developers/json_rpc/json-rpc-endpoint/",
+    "https://docs.etherscan.io/api-reference/endpoint/txlist",
+    "https://docs.etherscan.io/supported-chains",
+    "https://docs.etherscan.io/supported-chains.md",
+    "https://onfinality.io/"
+  ]
+}

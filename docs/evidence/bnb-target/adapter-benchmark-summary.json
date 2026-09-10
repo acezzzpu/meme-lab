@@ -1,0 +1,23 @@
+{
+  "status": "INCOMPLETE_PROVIDER_TRANSPORT_TIMEOUT",
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "started_at": "2026-09-10T05:41:20.707Z",
+  "finished_at": "2026-09-10T05:42:47.401Z",
+  "buy_quote_completed": false,
+  "sell_quote_attempted": false,
+  "successful_rpc_requests": 13,
+  "chain_id_verified": 56,
+  "pools_authenticated": [
+    "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+    "0x57d25ba5acf3990c3ca44348e0528cebf612ae56"
+  ],
+  "last_verified_block": 121016099,
+  "failure_stage": "eth_gasPrice before QuoterV2 invocation",
+  "failure": "Proxy CONNECT timed out (19s); native fetch earlier timed out at eth_chainId (20s)",
+  "median_successful_request_ms": 11107.2,
+  "writes_or_broadcasts": 0,
+  "real_quote_outputs": null,
+  "evidence": "/tmp/bnb-smart-live-quote-evidence.json",
+  "native_transport_evidence": "/tmp/bnb-smart-live-quote-native-evidence.json",
+  "reproduction_script": "/tmp/bnb-smart-live-quote-proxy-check.mjs"
+}

@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-10T01:00:02.270Z",
+  "scope": "Local backend, not hosted Cloudflare",
+  "endpoint": "https://solana-rpc.publicnode.com",
+  "transaction_sent": false,
+  "result": {
+    "saved": true,
+    "verified": true,
+    "status": "CONNECTED",
+    "trading_stopped": true
+  },
+  "token": {
+    "address": "So11111111111111111111111111111111111111112",
+    "decimals": 9,
+    "supply_raw": "0",
+    "mint_authority": null,
+    "freeze_authority": null,
+    "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    "extensions": [],
+    "slot": 445753170
+  },
+  "health": {
+    "id": "solana",
+    "status": "CONNECTED",
+    "latency_ms": 10977,
+    "last_success": 1789002013249,
+    "last_attempt": 1789002013249,
+    "error": null,
+    "block": "445753167",
+    "requests": 1
+  }
+}

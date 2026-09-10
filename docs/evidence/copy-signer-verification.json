@@ -1,0 +1,15 @@
+{
+  "at": "2026-09-10T05:52:00.359Z",
+  "scope": "Ephemeral signer, SQLite and EVM signatures; NO RPC and NO broadcast",
+  "checks": [
+    "Signer exposes only public address/status",
+    "Real EVM signature recovers correct dedicated wallet and exact chain/amount/router",
+    "SmartRouter V3 calldata signed with bound assets and zero token taxes",
+    "SmartRouter rejects coherent calldata for a different order token",
+    "Signer rejects recipient substitution",
+    "Emergency blocks subsequent signing",
+    "No sendRawTransaction exists in signer process"
+  ],
+  "status": "LOCALLY_TESTED",
+  "network_transactions_sent": 0
+}

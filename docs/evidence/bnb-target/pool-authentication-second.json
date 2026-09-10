@@ -1,0 +1,46 @@
+{
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "retrieved_at": "2026-09-10T05:33:56.324598+00:00",
+  "pools": [
+    "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+    "0x57d25ba5acf3990c3ca44348e0528cebf612ae56"
+  ],
+  "request": [
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865",
+          "data": "0x1698ee82000000000000000000000000bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f21590000000000000000000000000000000000000000000000000000000000002710"
+        },
+        "latest"
+      ]
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865",
+          "data": "0x1698ee820000000000000000000000008dd50128acb78102743ba65553f55793e9ee7d10000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f21590000000000000000000000000000000000000000000000000000000000002710"
+        },
+        "latest"
+      ]
+    }
+  ],
+  "response": [
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": "0x0000000000000000000000003ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "result": "0x00000000000000000000000057d25ba5acf3990c3ca44348e0528cebf612ae56"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "pool": "0xd873a4f6b96058e7dcbd3a587270473e4a5e5619",
+  "retrieved_at": "2026-09-10T05:30:46.531384+00:00",
+  "fields": [
+    "token0",
+    "token1",
+    "factory",
+    "reserves"
+  ],
+  "request": [
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xd873a4f6b96058e7dcbd3a587270473e4a5e5619",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ]
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xd873a4f6b96058e7dcbd3a587270473e4a5e5619",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ]
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xd873a4f6b96058e7dcbd3a587270473e4a5e5619",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ]
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 4,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xd873a4f6b96058e7dcbd3a587270473e4a5e5619",
+          "data": "0x0902f1ac"
+        },
+        "latest"
+      ]
+    }
+  ],
+  "response": [
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": "0x0000000000000000000000007c8d5502b544ddaf8852fc46d1174e34876d545c"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "result": "0x0000000000000000000000007f161c27dc558170f797d856539689b48ae47777"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "result": "0x000000000000000000000000ca143ce32fe78f1f7019d7d551a6402fc5350c73"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 4,
+      "result": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

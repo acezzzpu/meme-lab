@@ -1,0 +1,41 @@
+
+> meme-lab@0.1.0 test
+> node --test tests/*.test.mjs
+
+✔ base units remain exact above Number safe integer (1.397642ms)
+✔ risk rejects unknown data, stale state, capital, daily loss and drawdown (0.829784ms)
+✔ closing sell is not blocked by entry exposure/position/loss limits (0.174754ms)
+✔ quote enforces actual minimum output, not only displayed bps (0.214073ms)
+✔ persistent database and kill switch survive restart (22.733742ms)
+✔ SQL batch rolls back all mutations on failure (5.845793ms)
+✔ immutable strategy versions do not overwrite predecessor (1.611054ms)
+✔ pretrade access excludes observed or received future records (0.142745ms)
+✔ backtest cannot fill on signal snapshot itself (0.566226ms)
+✔ wallet transfers without opposing quote asset are not labeled buys (0.437311ms)
+✔ FIFO sale conserves token units and cost across partial positions (0.799919ms)
+✔ API secrets encrypted with authenticated encryption (3.763432ms)
+✔ RPC URL allowlist rejects SSRF targets and arbitrary domains (0.300054ms)
+✔ paper does not create position when cash cannot cover fees (1.571324ms)
+✔ paper buy/sell book atomically and do not double-credit exit (2.053183ms)
+✔ emergency stop blocks later paper fills (1.822574ms)
+✔ state and exports have no synthetic initial records or secrets (4.844821ms)
+✔ LIVE AUTO remains blocked without on-chain validation (4.435022ms)
+✔ Solana signer validates Ed25519 signature and exact message bytes (13.7054ms)
+✔ EVM signing binds chain, recipient, amount, nonce, calldata and gas (40.571375ms)
+✔ duplicate approval cannot reserve or sign twice (4.186506ms)
+✔ stop after signed payload validation prevents any broadcast (5.145936ms)
+✔ RPC send timeout remains uncertain and retry cannot create a second broadcast (3.698208ms)
+✔ mode changes invalidate previously approved live order at submit (2.632848ms)
+✔ token identity mismatch is rejected before external data or any order persistence (2.283501ms)
+✔ accounting atomically inserts position and ledger before releasing reservation (3.22932ms)
+✔ concurrent approvals cannot exceed a shared capital reservation (2.77287ms)
+✔ an expired quote cannot retain approval (1.959621ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 374.873401
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.

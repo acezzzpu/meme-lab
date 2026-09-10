@@ -1,0 +1,366 @@
+{
+  "started_at": "2026-09-10T05:41:20.707Z",
+  "operation": "READ_ONLY_QUOTE_BUY_AND_REVERSE_SELL",
+  "transport": "Python urllib HTTPS via environment proxy injected as BscRpc fetcher",
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "chain_id": 56,
+  "fixture_transaction": "0xba845a505ed4c648988d9c55435317fcef6014adb5cc3854c8e2b26b74f3c445",
+  "hints": [
+    {
+      "address": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+      "adapter": "PANCAKE_V3",
+      "token0": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+      "token1": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+      "fee": 10000
+    },
+    {
+      "address": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+      "adapter": "PANCAKE_V3",
+      "token0": "0x8dd50128acb78102743ba65553f55793e9ee7d10",
+      "token1": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+      "fee": 10000
+    }
+  ],
+  "terminal_token": "0x8dd50128acb78102743ba65553f55793e9ee7d10",
+  "requested_buy_bnb": "0.002",
+  "limitations": [
+    "Only quotes: no wallet simulation, signing, broadcasting, approvals or real positions.",
+    "SELL quote uses BUY quoted output without simulating BUY state changes."
+  ],
+  "requests": [
+    {
+      "at": "2026-09-10T05:41:20.708Z",
+      "method": "eth_chainId",
+      "params": [],
+      "http_status": 200,
+      "duration_ms": 10872.072441999999,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "0x38"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:31.581Z",
+      "method": "eth_blockNumber",
+      "params": [],
+      "http_status": 200,
+      "duration_ms": 10443.470636999999,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": "0x7368ebc"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:42.028Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x13f4ea83d0bd40e75c8222255bc855a974568dd4",
+          "data": "0x68e0d4e1"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 9507.080327,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": "0x000000000000000000000000ca143ce32fe78f1f7019d7d551a6402fc5350c73"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:42.026Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x13f4ea83d0bd40e75c8222255bc855a974568dd4",
+          "data": "0x4aa4a4fc"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 9677.371315,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": "0x000000000000000000000000bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:51.708Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 10758.640288999999,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": "0x0000000000000000000000000bfbcf9fa4f9c56b0f40a671ad40e0805a091865"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:51.707Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 11060.228083999998,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": "0x000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f2159"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:51.705Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 11107.230009000003,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": "0x000000000000000000000000bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:51.709Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+          "data": "0x0dfe1681"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 11147.921712999996,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": "0x0000000000000000000000008dd50128acb78102743ba65553f55793e9ee7d10"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:51.711Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+          "data": "0xd21220a7"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 11167.188794999998,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": "0x000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f2159"
+      }
+    },
+    {
+      "at": "2026-09-10T05:41:51.712Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x57d25ba5acf3990c3ca44348e0528cebf612ae56",
+          "data": "0xc45a0155"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 11212.058047000002,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": "0x0000000000000000000000000bfbcf9fa4f9c56b0f40a671ad40e0805a091865"
+      }
+    },
+    {
+      "at": "2026-09-10T05:42:02.925Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865",
+          "data": "0x1698ee82000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f21590000000000000000000000008dd50128acb78102743ba65553f55793e9ee7d100000000000000000000000000000000000000000000000000000000000002710"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 12606.982568,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "result": "0x00000000000000000000000057d25ba5acf3990c3ca44348e0528cebf612ae56"
+      }
+    },
+    {
+      "at": "2026-09-10T05:42:02.814Z",
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865",
+          "data": "0x1698ee82000000000000000000000000bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c000000000000000000000000fa6d9b504848606eb9aec04ccc161d169b3f21590000000000000000000000000000000000000000000000000000000000002710"
+        },
+        "latest"
+      ],
+      "http_status": 200,
+      "duration_ms": 12734.233407,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "result": "0x0000000000000000000000003ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d"
+      }
+    },
+    {
+      "at": "2026-09-10T05:42:15.549Z",
+      "method": "eth_blockNumber",
+      "params": [],
+      "http_status": 200,
+      "duration_ms": 12776.820997000003,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "result": "0x7368f23"
+      }
+    },
+    {
+      "at": "2026-09-10T05:42:28.327Z",
+      "method": "eth_gasPrice",
+      "params": [],
+      "duration_ms": 19071.894574000005,
+      "error": "Command failed: python -c import sys,urllib.request,urllib.error,json; r=urllib.request.Request(sys.argv[1],data=sys.argv[2].encode(),headers={'Content-Type':'application/json'});\ntry:\n x=urllib.request.urlopen(r,timeout=19); print(json.dumps({'status':x.status,'headers':dict(x.headers),'body':x.read().decode()}))\nexcept urllib.error.HTTPError as e: print(json.dumps({'status':e.code,'headers':dict(e.headers),'body':e.read().decode()})) https://bsc-dataseed.bnbchain.org {\"jsonrpc\":\"2.0\",\"id\":14,\"method\":\"eth_gasPrice\",\"params\":[]}\nTraceback (most recent call last):\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1344, in do_open\n    h.request(req.get_method(), req.selector, req.data, headers,\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1386, in request\n    self._send_request(method, url, body, headers, encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1432, in _send_request\n    self.endheaders(body, encode_chunked=encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1381, in endheaders\n    self._send_output(message_body, encode_chunked=encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1141, in _send_output\n    self.send(msg)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1085, in send\n    self.connect()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1520, in connect\n    super().connect()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1061, in connect\n    self._tunnel()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1019, in _tunnel\n    (version, code, message) = response._read_status()\n                               ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 304, in _read_status\n    line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py\", line 720, in readinto\n    return self._sock.recv_into(b)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: timed out\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"<string>\", line 3, in <module>\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 515, in open\n    response = self._open(req, data)\n               ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 532, in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1392, in https_open\n    return self.do_open(http.client.HTTPSConnection, req,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1347, in do_open\n    raise URLError(err)\nurllib.error.URLError: <urlopen error timed out>\n"
+    }
+  ],
+  "results": [
+    {
+      "side": "BUY",
+      "status": "ERROR",
+      "total_duration_ms": 86691.958265,
+      "error": "Command failed: python -c import sys,urllib.request,urllib.error,json; r=urllib.request.Request(sys.argv[1],data=sys.argv[2].encode(),headers={'Content-Type':'application/json'});\ntry:\n x=urllib.request.urlopen(r,timeout=19); print(json.dumps({'status':x.status,'headers':dict(x.headers),'body':x.read().decode()}))\nexcept urllib.error.HTTPError as e: print(json.dumps({'status':e.code,'headers':dict(e.headers),'body':e.read().decode()})) https://bsc-dataseed.bnbchain.org {\"jsonrpc\":\"2.0\",\"id\":14,\"method\":\"eth_gasPrice\",\"params\":[]}\nTraceback (most recent call last):\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1344, in do_open\n    h.request(req.get_method(), req.selector, req.data, headers,\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1386, in request\n    self._send_request(method, url, body, headers, encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1432, in _send_request\n    self.endheaders(body, encode_chunked=encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1381, in endheaders\n    self._send_output(message_body, encode_chunked=encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1141, in _send_output\n    self.send(msg)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1085, in send\n    self.connect()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1520, in connect\n    super().connect()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1061, in connect\n    self._tunnel()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1019, in _tunnel\n    (version, code, message) = response._read_status()\n                               ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 304, in _read_status\n    line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py\", line 720, in readinto\n    return self._sock.recv_into(b)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: timed out\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"<string>\", line 3, in <module>\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 515, in open\n    response = self._open(req, data)\n               ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 532, in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1392, in https_open\n    return self.do_open(http.client.HTTPSConnection, req,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1347, in do_open\n    raise URLError(err)\nurllib.error.URLError: <urlopen error timed out>\n",
+      "stack": "Error: Command failed: python -c import sys,urllib.request,urllib.error,json; r=urllib.request.Request(sys.argv[1],data=sys.argv[2].encode(),headers={'Content-Type':'application/json'});\ntry:\n x=urllib.request.urlopen(r,timeout=19); print(json.dumps({'status':x.status,'headers':dict(x.headers),'body':x.read().decode()}))\nexcept urllib.error.HTTPError as e: print(json.dumps({'status':e.code,'headers':dict(e.headers),'body':e.read().decode()})) https://bsc-dataseed.bnbchain.org {\"jsonrpc\":\"2.0\",\"id\":14,\"method\":\"eth_gasPrice\",\"params\":[]}\nTraceback (most recent call last):\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1344, in do_open\n    h.request(req.get_method(), req.selector, req.data, headers,\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1386, in request\n    self._send_request(method, url, body, headers, encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1432, in _send_request\n    self.endheaders(body, encode_chunked=encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1381, in endheaders\n    self._send_output(message_body, encode_chunked=encode_chunked)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1141, in _send_output\n    self.send(msg)\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1085, in send\n    self.connect()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1520, in connect\n    super().connect()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1061, in connect\n    self._tunnel()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 1019, in _tunnel\n    (version, code, message) = response._read_status()\n                               ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/client.py\", line 304, in _read_status\n    line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py\", line 720, in readinto\n    return self._sock.recv_into(b)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: timed out\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"<string>\", line 3, in <module>\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 515, in open\n    response = self._open(req, data)\n               ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 532, in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1392, in https_open\n    return self.do_open(http.client.HTTPSConnection, req,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/urllib/request.py\", line 1347, in do_open\n    raise URLError(err)\nurllib.error.URLError: <urlopen error timed out>\n\n    at genericNodeError (node:internal/errors:985:15)\n    at wrappedFn (node:internal/errors:539:14)\n    at ChildProcess.exithandler (node:child_process:417:12)\n    at ChildProcess.emit (node:events:509:28)\n    at maybeClose (node:internal/child_process:1141:16)\n    at ChildProcess._handle.onexit (node:internal/child_process:306:5)"
+    }
+  ],
+  "finished_at": "2026-09-10T05:42:47.401Z",
+  "rpc_metrics": [
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_chainId",
+      "at": 1789018891581,
+      "duration_ms": 10873.558557,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_blockNumber",
+      "at": 1789018902025,
+      "duration_ms": 10443.987256999999,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018911536,
+      "duration_ms": 9507.656047,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018911704,
+      "duration_ms": 9677.856859,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018922468,
+      "duration_ms": 10759.603715000005,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018922768,
+      "duration_ms": 11060.732677,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018922813,
+      "duration_ms": 11107.664915999998,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018922858,
+      "duration_ms": 11148.323478999999,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018922878,
+      "duration_ms": 11167.686156999996,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018922924,
+      "duration_ms": 11212.639303999997,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018935533,
+      "duration_ms": 12607.472627999996,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_call",
+      "at": 1789018935549,
+      "duration_ms": 12734.641282999997,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_blockNumber",
+      "at": 1789018948326,
+      "duration_ms": 12777.303705999999,
+      "status": "OK"
+    },
+    {
+      "provider": "official-bnb-dataseed",
+      "method": "eth_gasPrice",
+      "at": 1789018967399,
+      "duration_ms": 19072.246516,
+      "status": "ERROR",
+      "error": "Command failed: python -c import sys,urllib.request,urllib.error,json; r=urllib.request.Request(sys.argv[1],data=sys.argv[2].encode(),headers={'Content-Type':'application/json'});\ntry:\n x=urllib.request.urlopen(r,timeout=19); print(json.dum"
+    }
+  ]
+}

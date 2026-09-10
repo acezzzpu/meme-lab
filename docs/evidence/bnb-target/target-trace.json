@@ -1,0 +1,24 @@
+{
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "retrieved_at": "2026-09-10T05:28:24.322021+00:00",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "debug_traceTransaction",
+    "params": [
+      "0x4f1caec89492578df33b2b1f7864d8155ac824a9c65f41fd66956630470dcb20",
+      {
+        "tracer": "callTracer",
+        "timeout": "10s"
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32000,
+      "message": "missing trie node"
+    }
+  }
+}

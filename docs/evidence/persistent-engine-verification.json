@@ -1,0 +1,679 @@
+{
+  "at": "2026-09-10T02:03:17.617Z",
+  "status": "PASSED_LIFECYCLE_WITH_PROVIDER_LIMITATIONS",
+  "checks": [
+    {
+      "name": "SSE delivered authenticated real database state; browser connection closed"
+    },
+    {
+      "name": "Engine progressed with no browser or API requests",
+      "seconds": 35,
+      "events": 18,
+      "real_snapshots": 1
+    },
+    {
+      "name": "Real-quote PAPER entry observed before crash test"
+    },
+    {
+      "name": "Watchdog restarted killed worker and recovered same PAPER session",
+      "old_pid": 29,
+      "new_pid": 41
+    },
+    {
+      "name": "PAUSE NEW ENTRIES prevented additional BUYs",
+      "buys": 2
+    },
+    {
+      "name": "Full API/server restart recovered desired RUNNING, pause, balance and positions",
+      "cash_cents": 9978,
+      "positions": 2
+    },
+    {
+      "name": "Automatic PAPER BUY and SELL booked with real Jupiter quotes"
+    },
+    {
+      "name": "STOP ENGINE persisted; database retained"
+    }
+  ],
+  "limits": [
+    "WebSocket not verified connected: inspect actual provider errors"
+  ],
+  "network": [
+    {
+      "chain": "solana",
+      "status": "CONNECTING",
+      "provider": "solana-rpc.publicnode.com",
+      "last_event": 1789005927386,
+      "last_block": "445765587",
+      "connected_at": null,
+      "reconnects": 0,
+      "error": null,
+      "subscription_count": 0
+    }
+  ],
+  "data_dir": "/workspace/sites/meme-lab/.runtime/engine-check-1789005797610",
+  "providers": [
+    {
+      "id": "solana",
+      "status": "CONNECTED",
+      "latency_ms": 6111,
+      "last_success": 1789005929888,
+      "block": "445765592",
+      "error": null
+    },
+    {
+      "id": "market",
+      "status": "CONNECTED",
+      "latency_ms": 8509,
+      "last_success": 1789005932639,
+      "block": null,
+      "error": null
+    }
+  ],
+  "trades": [
+    {
+      "side": "BUY",
+      "state": "PAPER_FILLED",
+      "token_id": "solana:So11111111111111111111111111111111111111112",
+      "notional_cents": 203,
+      "created_at": 1789005863909,
+      "quote": {
+        "provider": "Jupiter Swap v2",
+        "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "outputMint": "So11111111111111111111111111111111111111112",
+        "inAmount": "1999700",
+        "outAmount": "19770149",
+        "minOut": "19572447",
+        "slippageBps": 100,
+        "priceImpactPct": -0.02157225828420827,
+        "route": [
+          {
+            "percent": 23.73,
+            "bps": 2373,
+            "usdValue": 0.4744581366327402,
+            "swapInfo": {
+              "ammKey": "9xPhpwq6GLUkrDBNfXCbnSP9ARAMMyUQqgkrqaDW6NLV",
+              "label": "AlphaQ",
+              "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "outputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+              "inAmount": "474513",
+              "outAmount": "474739"
+            }
+          },
+          {
+            "percent": 100,
+            "bps": 10000,
+            "usdValue": 0.4744581366327402,
+            "swapInfo": {
+              "ammKey": "G8LqPHYAMcwP14CDgk9XsV9VdwpsW3aJ59VubwnyrJVr",
+              "label": "Raydium CLMM",
+              "inputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+              "outputMint": "So11111111111111111111111111111111111111112",
+              "inAmount": "474739",
+              "outAmount": "4692340"
+            }
+          },
+          {
+            "percent": 61.8,
+            "bps": 6180,
+            "usdValue": 1.2356305454657963,
+            "swapInfo": {
+              "ammKey": "8sLbNZoA1cfnvMJLPfp98ZLAnFSYCFApfJKMbiXNLwxj",
+              "label": "Raydium CLMM",
+              "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "outputMint": "So11111111111111111111111111111111111111112",
+              "inAmount": "1235883",
+              "outAmount": "12220715"
+            }
+          },
+          {
+            "percent": 14.47,
+            "bps": 1447,
+            "usdValue": 0.2893134950305837,
+            "swapInfo": {
+              "ammKey": "Pi9nzTjPxD8DsRfRBGfKYzmefJoJM8TcXu2jyaQjSHm",
+              "label": "AlphaQ",
+              "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "outputMint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+              "inAmount": "289304",
+              "outAmount": "289372"
+            }
+          },
+          {
+            "percent": 100,
+            "bps": 10000,
+            "usdValue": 0.2893134950305837,
+            "swapInfo": {
+              "ammKey": "B6LL9aCWVuo1tTcJoYvCTDqYrq1vjMfci8uHxsm4UxTR",
+              "label": "Whirlpool",
+              "inputMint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+              "outputMint": "So11111111111111111111111111111111111111112",
+              "inAmount": "289372",
+              "outAmount": "2861048"
+            }
+          }
+        ],
+        "quotedAt": 1789005863908,
+        "raw": {
+          "swapType": "aggregator",
+          "inAmount": "1999700",
+          "outAmount": "19770149",
+          "otherAmountThreshold": "19572447",
+          "swapMode": "ExactIn",
+          "slippageBps": 100,
+          "priceImpactPct": "-0.00021572258284208268",
+          "routePlan": [
+            {
+              "percent": 23.73,
+              "bps": 2373,
+              "usdValue": 0.4744581366327402,
+              "swapInfo": {
+                "ammKey": "9xPhpwq6GLUkrDBNfXCbnSP9ARAMMyUQqgkrqaDW6NLV",
+                "label": "AlphaQ",
+                "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "outputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+                "inAmount": "474513",
+                "outAmount": "474739"
+              }
+            },
+            {
+              "percent": 100,
+              "bps": 10000,
+              "usdValue": 0.4744581366327402,
+              "swapInfo": {
+                "ammKey": "G8LqPHYAMcwP14CDgk9XsV9VdwpsW3aJ59VubwnyrJVr",
+                "label": "Raydium CLMM",
+                "inputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+                "outputMint": "So11111111111111111111111111111111111111112",
+                "inAmount": "474739",
+                "outAmount": "4692340"
+              }
+            },
+            {
+              "percent": 61.8,
+              "bps": 6180,
+              "usdValue": 1.2356305454657963,
+              "swapInfo": {
+                "ammKey": "8sLbNZoA1cfnvMJLPfp98ZLAnFSYCFApfJKMbiXNLwxj",
+                "label": "Raydium CLMM",
+                "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "outputMint": "So11111111111111111111111111111111111111112",
+                "inAmount": "1235883",
+                "outAmount": "12220715"
+              }
+            },
+            {
+              "percent": 14.47,
+              "bps": 1447,
+              "usdValue": 0.2893134950305837,
+              "swapInfo": {
+                "ammKey": "Pi9nzTjPxD8DsRfRBGfKYzmefJoJM8TcXu2jyaQjSHm",
+                "label": "AlphaQ",
+                "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "outputMint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+                "inAmount": "289304",
+                "outAmount": "289372"
+              }
+            },
+            {
+              "percent": 100,
+              "bps": 10000,
+              "usdValue": 0.2893134950305837,
+              "swapInfo": {
+                "ammKey": "B6LL9aCWVuo1tTcJoYvCTDqYrq1vjMfci8uHxsm4UxTR",
+                "label": "Whirlpool",
+                "inputMint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+                "outputMint": "So11111111111111111111111111111111111111112",
+                "inAmount": "289372",
+                "outAmount": "2861048"
+              }
+            }
+          ],
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeBps": 2,
+          "platformFee": {
+            "feeBps": 2,
+            "feeMint": "So11111111111111111111111111111111111111112"
+          },
+          "signatureFeeLamports": 0,
+          "signatureFeePayer": null,
+          "prioritizationFeeLamports": 0,
+          "prioritizationFeePayer": null,
+          "rentFeeLamports": 0,
+          "rentFeePayer": null,
+          "transaction": null,
+          "gasless": false,
+          "jitOptimized": false,
+          "taker": null,
+          "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "outputMint": "So11111111111111111111111111111111111111112",
+          "router": "metis",
+          "guaranteedPrice": false,
+          "requestId": "01a0890f-1aa1-7321-97f0-4f45afeec34e",
+          "inUsdValue": 1.9994021771291202,
+          "outUsdValue": 1.9989708609273298,
+          "swapUsdValue": 1.9994021771291202,
+          "priceImpact": -0.02157225828420827,
+          "mode": "manual",
+          "totalTime": 162
+        }
+      }
+    },
+    {
+      "side": "SELL",
+      "state": "PAPER_FILLED",
+      "token_id": "solana:So11111111111111111111111111111111111111112",
+      "notional_cents": 192,
+      "created_at": 1789005893361,
+      "quote": {
+        "provider": "Jupiter Swap v2",
+        "inputMint": "So11111111111111111111111111111111111111112",
+        "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "inAmount": "19572447",
+        "outAmount": "1978110",
+        "minOut": "1958328",
+        "slippageBps": 100,
+        "priceImpactPct": -0.017043711020381068,
+        "route": [
+          {
+            "percent": 43.53,
+            "bps": 4353,
+            "usdValue": 0.8609430404028428,
+            "swapInfo": {
+              "ammKey": "Esvfxt3jMDdtTZqLF1fqRhDjzM8Bpr7fZxJMrK69PB7e",
+              "label": "Whirlpool",
+              "inputMint": "So11111111111111111111111111111111111111112",
+              "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "inAmount": "8519255",
+              "outAmount": "861162"
+            }
+          },
+          {
+            "percent": 34.3,
+            "bps": 3430,
+            "usdValue": 0.6783906796650012,
+            "swapInfo": {
+              "ammKey": "8VXj6uz61v8yAu7m9pVEYNYjJwjK7WfFbRCs3YyXY6Bb",
+              "label": "PancakeSwap",
+              "inputMint": "So11111111111111111111111111111111111111112",
+              "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "inAmount": "6713608",
+              "outAmount": "678649"
+            }
+          },
+          {
+            "percent": 22.17,
+            "bps": 2217,
+            "usdValue": 0.4384816725414891,
+            "swapInfo": {
+              "ammKey": "2SgUGxYDczrB6wUzXHPJH65pNhWkEzNMEx3km4xTYUTC",
+              "label": "Invariant",
+              "inputMint": "So11111111111111111111111111111111111111112",
+              "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "inAmount": "4339584",
+              "outAmount": "438694"
+            }
+          }
+        ],
+        "quotedAt": 1789005893361,
+        "raw": {
+          "swapType": "aggregator",
+          "inAmount": "19572447",
+          "outAmount": "1978110",
+          "otherAmountThreshold": "1958328",
+          "swapMode": "ExactIn",
+          "slippageBps": 100,
+          "priceImpactPct": "-0.00017043711020381068",
+          "routePlan": [
+            {
+              "percent": 43.53,
+              "bps": 4353,
+              "usdValue": 0.8609430404028428,
+              "swapInfo": {
+                "ammKey": "Esvfxt3jMDdtTZqLF1fqRhDjzM8Bpr7fZxJMrK69PB7e",
+                "label": "Whirlpool",
+                "inputMint": "So11111111111111111111111111111111111111112",
+                "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "inAmount": "8519255",
+                "outAmount": "861162"
+              }
+            },
+            {
+              "percent": 34.3,
+              "bps": 3430,
+              "usdValue": 0.6783906796650012,
+              "swapInfo": {
+                "ammKey": "8VXj6uz61v8yAu7m9pVEYNYjJwjK7WfFbRCs3YyXY6Bb",
+                "label": "PancakeSwap",
+                "inputMint": "So11111111111111111111111111111111111111112",
+                "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "inAmount": "6713608",
+                "outAmount": "678649"
+              }
+            },
+            {
+              "percent": 22.17,
+              "bps": 2217,
+              "usdValue": 0.4384816725414891,
+              "swapInfo": {
+                "ammKey": "2SgUGxYDczrB6wUzXHPJH65pNhWkEzNMEx3km4xTYUTC",
+                "label": "Invariant",
+                "inputMint": "So11111111111111111111111111111111111111112",
+                "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "inAmount": "4339584",
+                "outAmount": "438694"
+              }
+            }
+          ],
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeBps": 2,
+          "platformFee": {
+            "feeBps": 2,
+            "feeMint": "So11111111111111111111111111111111111111112"
+          },
+          "signatureFeeLamports": 0,
+          "signatureFeePayer": null,
+          "prioritizationFeeLamports": 0,
+          "prioritizationFeePayer": null,
+          "rentFeeLamports": 0,
+          "rentFeePayer": null,
+          "transaction": null,
+          "gasless": false,
+          "jitOptimized": false,
+          "taker": null,
+          "inputMint": "So11111111111111111111111111111111111111112",
+          "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "router": "metis",
+          "guaranteedPrice": false,
+          "requestId": "01a0890f-8da0-7760-b1dd-31d5b0d8487e",
+          "inUsdValue": 1.9781525432123406,
+          "outUsdValue": 1.9778153926093331,
+          "swapUsdValue": 1.9778153926093331,
+          "priceImpact": -0.017043711020381068,
+          "mode": "manual",
+          "totalTime": 165
+        }
+      }
+    },
+    {
+      "side": "BUY",
+      "state": "PAPER_FILLED",
+      "token_id": "solana:So11111111111111111111111111111111111111112",
+      "notional_cents": 203,
+      "created_at": 1789005895891,
+      "quote": {
+        "provider": "Jupiter Swap v2",
+        "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "outputMint": "So11111111111111111111111111111111111111112",
+        "inAmount": "1999700",
+        "outAmount": "19783253",
+        "minOut": "19585420",
+        "slippageBps": 100,
+        "priceImpactPct": -0.016257958876916504,
+        "route": [
+          {
+            "percent": 40.24,
+            "bps": 4024,
+            "usdValue": 0.804559436076758,
+            "swapInfo": {
+              "ammKey": "7wXtGayssQRekJYop299FoJZmcD7fvRW6NUwLk3r6VWM",
+              "label": "Quantum",
+              "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "outputMint": "So11111111111111111111111111111111111111112",
+              "inAmount": "804582",
+              "outAmount": "7961340"
+            }
+          },
+          {
+            "percent": 59.76,
+            "bps": 5976,
+            "usdValue": 1.194842741052362,
+            "swapInfo": {
+              "ammKey": "HrWp3QR3hNeVy6tEZtcpsjwEiGgKJuL1NDP84EaaU2Nh",
+              "label": "Byreal",
+              "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "outputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+              "inAmount": "1195118",
+              "outAmount": "1195679"
+            }
+          },
+          {
+            "percent": 100,
+            "bps": 10000,
+            "usdValue": 1.194842741052362,
+            "swapInfo": {
+              "ammKey": "DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT",
+              "label": "Byreal",
+              "inputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+              "outputMint": "So11111111111111111111111111111111111111112",
+              "inAmount": "1195679",
+              "outAmount": "11825870"
+            }
+          }
+        ],
+        "quotedAt": 1789005895891,
+        "raw": {
+          "swapType": "aggregator",
+          "inAmount": "1999700",
+          "outAmount": "19783253",
+          "otherAmountThreshold": "19585420",
+          "swapMode": "ExactIn",
+          "slippageBps": 100,
+          "priceImpactPct": "-0.00016257958876916503",
+          "routePlan": [
+            {
+              "percent": 40.24,
+              "bps": 4024,
+              "usdValue": 0.804559436076758,
+              "swapInfo": {
+                "ammKey": "7wXtGayssQRekJYop299FoJZmcD7fvRW6NUwLk3r6VWM",
+                "label": "Quantum",
+                "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "outputMint": "So11111111111111111111111111111111111111112",
+                "inAmount": "804582",
+                "outAmount": "7961340"
+              }
+            },
+            {
+              "percent": 59.76,
+              "bps": 5976,
+              "usdValue": 1.194842741052362,
+              "swapInfo": {
+                "ammKey": "HrWp3QR3hNeVy6tEZtcpsjwEiGgKJuL1NDP84EaaU2Nh",
+                "label": "Byreal",
+                "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "outputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+                "inAmount": "1195118",
+                "outAmount": "1195679"
+              }
+            },
+            {
+              "percent": 100,
+              "bps": 10000,
+              "usdValue": 1.194842741052362,
+              "swapInfo": {
+                "ammKey": "DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT",
+                "label": "Byreal",
+                "inputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+                "outputMint": "So11111111111111111111111111111111111111112",
+                "inAmount": "1195679",
+                "outAmount": "11825870"
+              }
+            }
+          ],
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeBps": 2,
+          "platformFee": {
+            "feeBps": 2,
+            "feeMint": "So11111111111111111111111111111111111111112"
+          },
+          "signatureFeeLamports": 0,
+          "signatureFeePayer": null,
+          "prioritizationFeeLamports": 0,
+          "prioritizationFeePayer": null,
+          "rentFeeLamports": 0,
+          "rentFeePayer": null,
+          "transaction": null,
+          "gasless": false,
+          "jitOptimized": false,
+          "taker": null,
+          "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "outputMint": "So11111111111111111111111111111111111111112",
+          "router": "metis",
+          "guaranteedPrice": false,
+          "requestId": "01a0890f-9786-7638-b1a5-0b275296186c",
+          "inUsdValue": 1.9994021771291202,
+          "outUsdValue": 1.9990771151453783,
+          "swapUsdValue": 1.9994021771291202,
+          "priceImpact": -0.016257958876916504,
+          "mode": "manual",
+          "totalTime": 168
+        }
+      }
+    },
+    {
+      "side": "SELL",
+      "state": "PAPER_FILLED",
+      "token_id": "solana:So11111111111111111111111111111111111111112",
+      "notional_cents": 192,
+      "created_at": 1789005925765,
+      "quote": {
+        "provider": "Jupiter Swap v2",
+        "inputMint": "So11111111111111111111111111111111111111112",
+        "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "inAmount": "19585420",
+        "outAmount": "1979350",
+        "minOut": "1959556",
+        "slippageBps": 100,
+        "priceImpactPct": 0.021307555624766234,
+        "route": [
+          {
+            "percent": 100,
+            "bps": 10000,
+            "usdValue": 1.9790445660890648,
+            "swapInfo": {
+              "ammKey": "5dhYayH9qvzNyCPoh2hKN8TJqumoGsWdyZ9UfPLXBfD9",
+              "label": "HumidiFi",
+              "inputMint": "So11111111111111111111111111111111111111112",
+              "outputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+              "inAmount": "19585420",
+              "outAmount": "1980667"
+            }
+          },
+          {
+            "percent": 100,
+            "bps": 10000,
+            "usdValue": 1.9790445660890648,
+            "swapInfo": {
+              "ammKey": "9xPhpwq6GLUkrDBNfXCbnSP9ARAMMyUQqgkrqaDW6NLV",
+              "label": "AlphaQ",
+              "inputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+              "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "inAmount": "1980667",
+              "outAmount": "1979745"
+            }
+          }
+        ],
+        "quotedAt": 1789005925765,
+        "raw": {
+          "swapType": "aggregator",
+          "inAmount": "19585420",
+          "outAmount": "1979350",
+          "otherAmountThreshold": "1959556",
+          "swapMode": "ExactIn",
+          "slippageBps": 100,
+          "priceImpactPct": "0.00021307555624766234",
+          "routePlan": [
+            {
+              "percent": 100,
+              "bps": 10000,
+              "usdValue": 1.9790445660890648,
+              "swapInfo": {
+                "ammKey": "5dhYayH9qvzNyCPoh2hKN8TJqumoGsWdyZ9UfPLXBfD9",
+                "label": "HumidiFi",
+                "inputMint": "So11111111111111111111111111111111111111112",
+                "outputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+                "inAmount": "19585420",
+                "outAmount": "1980667"
+              }
+            },
+            {
+              "percent": 100,
+              "bps": 10000,
+              "usdValue": 1.9790445660890648,
+              "swapInfo": {
+                "ammKey": "9xPhpwq6GLUkrDBNfXCbnSP9ARAMMyUQqgkrqaDW6NLV",
+                "label": "AlphaQ",
+                "inputMint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+                "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "inAmount": "1980667",
+                "outAmount": "1979745"
+              }
+            }
+          ],
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeBps": 2,
+          "platformFee": {
+            "feeBps": 2,
+            "feeMint": "So11111111111111111111111111111111111111112"
+          },
+          "signatureFeeLamports": 0,
+          "signatureFeePayer": null,
+          "prioritizationFeeLamports": 0,
+          "prioritizationFeePayer": null,
+          "rentFeeLamports": 0,
+          "rentFeePayer": null,
+          "transaction": null,
+          "gasless": false,
+          "jitOptimized": false,
+          "taker": null,
+          "inputMint": "So11111111111111111111111111111111111111112",
+          "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "router": "metis",
+          "guaranteedPrice": false,
+          "requestId": "01a08910-0c32-7039-8636-e41ee2118c14",
+          "inUsdValue": 1.978622969899149,
+          "outUsdValue": 1.9790445660890648,
+          "swapUsdValue": 1.9790445660890648,
+          "priceImpact": 0.021307555624766234,
+          "mode": "manual",
+          "totalTime": 165
+        }
+      }
+    }
+  ],
+  "pool_events": [],
+  "slot_samples": [
+    {
+      "at": 1789005927386,
+      "data": "{\"block\":\"445765587\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    },
+    {
+      "at": 1789005925192,
+      "data": "{\"block\":\"445765580\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    },
+    {
+      "at": 1789005923125,
+      "data": "{\"block\":\"445765574\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    }
+  ],
+  "recent_errors": [
+    {
+      "message": "Conexión RPC con error",
+      "data": "{\"status\":\"ERROR\",\"error\":\"The operation was aborted due to timeout\",\"provider\":\"solana-rpc.publicnode.com\"}"
+    },
+    {
+      "message": "Token sin datos utilizables",
+      "data": "{\"address\":\"7UTfMBzXgixAyVeqpityJbEtRDTgy4UDfmfJaMyopump\",\"error\":\"The operation was aborted due to timeout\"}"
+    },
+    {
+      "message": "Token sin datos utilizables",
+      "data": "{\"address\":\"14ssrqzdwwG7mJt7ePTKeTUeoUk9kLpmqa9ND5Lupump\",\"error\":\"The operation was aborted due to timeout\"}"
+    },
+    {
+      "message": "Token sin datos utilizables",
+      "data": "{\"address\":\"So11111111111111111111111111111111111111112\",\"error\":\"The operation was aborted due to timeout\"}"
+    }
+  ],
+  "duration_seconds": 177
+}

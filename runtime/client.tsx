@@ -1,0 +1,1 @@
+import React from 'react';import {createRoot} from 'react-dom/client';import MemeLab from '../app/meme-lab';import '../app/globals.css';createRoot(document.getElementById('root')!).render(<MemeLab/>);

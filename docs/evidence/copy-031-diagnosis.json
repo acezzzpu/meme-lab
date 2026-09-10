@@ -1,0 +1,33 @@
+{
+  "source": "User-provided copy/state snapshot, September 10 2026; not a new network probe",
+  "snapshot_at": 1789021113699,
+  "observed_head": 121020909,
+  "cursor": 121020452,
+  "block_lag": 457,
+  "pending_jobs": 40,
+  "last_rpc_duration_ms": {
+    "min": 182.86549999995623,
+    "max": 220.45840000000317,
+    "n": 8
+  },
+  "source_events": 4,
+  "copy_actions": 0,
+  "positions": 0,
+  "unverified_events": [
+    {
+      "hash": "0xb400e26a42759c90ba31082353d7eb79e370a0282653adfa0308a0c5db7e3206",
+      "token": "0x06f7aeabc9c37d457922a9368f291c5d57c07777",
+      "symbol": "UPONLY",
+      "reason": "QUOTE_AMOUNT_NOT_VERIFIABLE",
+      "history": true
+    },
+    {
+      "hash": "0xfbd668b04f85e89fbf130d02d1162b8ea277e99ae4ab978e9bca200680e447b3",
+      "token": "0x06f7aeabc9c37d457922a9368f291c5d57c07777",
+      "symbol": "UPONLY",
+      "reason": "QUOTE_AMOUNT_NOT_VERIFIABLE",
+      "history": true
+    }
+  ],
+  "limitation": "Fixing queue throughput does not prove native BNB amounts, live execution or profitability."
+}

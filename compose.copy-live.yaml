@@ -1,0 +1,9 @@
+# Optional override: mount a dedicated encrypted keystore read-only into the signer host.
+# docker compose --env-file .env.production -f compose.production.yaml -f compose.copy-live.yaml up -d --build
+services:
+  meme-lab:
+    environment:
+      BNB_KEYSTORE_FILE: /run/meme-secrets/bnb-copy-keystore.json
+      BNB_PASSWORD_FILE: /run/meme-secrets/bnb-copy-password
+    volumes:
+      - ${BNB_SECRET_DIR:?Set BNB_SECRET_DIR to the private signer folder}:/run/meme-secrets:ro

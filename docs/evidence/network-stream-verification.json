@@ -1,0 +1,39 @@
+{
+  "extracted_at": "2026-09-10T02:07:49.909511+00:00",
+  "source": "Retained isolated acceptance database; historical measurements, not current production status",
+  "last_network_state": [
+    {
+      "chain": "solana",
+      "status": "STOPPED",
+      "provider": "solana-rpc.publicnode.com",
+      "last_event": 1789005672300,
+      "last_block": "445764774",
+      "connected_at": 1789005671012,
+      "reconnects": 0,
+      "error": null,
+      "subscription_count": 3
+    }
+  ],
+  "persisted_slot_events": [
+    {
+      "at": 1789005671396,
+      "data": "{\"block\":\"445764774\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    },
+    {
+      "at": 1789005640084,
+      "data": "{\"block\":\"445764678\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    },
+    {
+      "at": 1789005637812,
+      "data": "{\"block\":\"445764671\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    },
+    {
+      "at": 1789005635713,
+      "data": "{\"block\":\"445764664\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    },
+    {
+      "at": 1789005633615,
+      "data": "{\"block\":\"445764658\",\"provider\":\"solana-rpc.publicnode.com\",\"transport\":\"WebSocket\",\"hash\":null}"
+    }
+  ]
+}

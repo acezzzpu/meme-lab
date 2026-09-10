@@ -1,0 +1,21 @@
+{
+  "provider": "https://bsc-dataseed1.bnbchain.org",
+  "target": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+  "observations": [
+    {
+      "block": 121013135,
+      "nonce": 46109,
+      "received_at": "2026-09-10T05:20:22.443412+00:00"
+    },
+    {
+      "block": 121013182,
+      "nonce": 46109,
+      "received_at": "2026-09-10T05:20:43.704292+00:00"
+    },
+    {
+      "block": 121013229,
+      "nonce": 46109,
+      "received_at": "2026-09-10T05:21:05.445703+00:00"
+    }
+  ]
+}

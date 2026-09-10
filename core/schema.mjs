@@ -1,0 +1,35 @@
+// Shared SQLite / Cloudflare D1 schema. Integer on-chain amounts are decimal TEXT.
+export const schema = `
+CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS chains (id TEXT PRIMARY KEY,family TEXT NOT NULL,chain_id INTEGER,rpc_url TEXT,ws_url TEXT,enabled INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS provider_health (id TEXT PRIMARY KEY,status TEXT NOT NULL,latency_ms REAL,last_success INTEGER,last_attempt INTEGER,error TEXT,block TEXT,requests INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS tokens (id TEXT PRIMARY KEY,chain TEXT NOT NULL,address TEXT NOT NULL,symbol TEXT,name TEXT,decimals INTEGER,first_seen INTEGER NOT NULL, UNIQUE(chain,address));
+CREATE TABLE IF NOT EXISTS pools (id TEXT PRIMARY KEY,token_id TEXT NOT NULL,chain TEXT NOT NULL,address TEXT NOT NULL,dex TEXT,created_at INTEGER,source TEXT NOT NULL, UNIQUE(chain,address));
+CREATE TABLE IF NOT EXISTS market_snapshots (id INTEGER PRIMARY KEY AUTOINCREMENT,token_id TEXT NOT NULL,pool_id TEXT,observed_at INTEGER NOT NULL,received_at INTEGER NOT NULL,price REAL,liquidity REAL,market_cap REAL,fdv REAL,volume_5m REAL,volume_1h REAL,buys_5m INTEGER,sells_5m INTEGER,change_5m REAL,change_1h REAL,source TEXT NOT NULL,raw TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS snapshots_token_time ON market_snapshots(token_id,received_at);
+CREATE TABLE IF NOT EXISTS wallets (id TEXT PRIMARY KEY,chain TEXT NOT NULL,address TEXT NOT NULL,label TEXT,created_at INTEGER NOT NULL,cursor TEXT,status TEXT DEFAULT 'QUEUED', UNIQUE(chain,address));
+CREATE TABLE IF NOT EXISTS transactions (id TEXT PRIMARY KEY,chain TEXT NOT NULL,hash TEXT NOT NULL,wallet_id TEXT,block TEXT,occurred_at INTEGER,received_at INTEGER NOT NULL,status TEXT NOT NULL,fee_raw TEXT,raw TEXT NOT NULL, UNIQUE(chain,hash,wallet_id));
+CREATE INDEX IF NOT EXISTS tx_wallet_time ON transactions(wallet_id,occurred_at);
+CREATE TABLE IF NOT EXISTS wallet_flows (id TEXT PRIMARY KEY,tx_id TEXT NOT NULL,wallet_id TEXT NOT NULL,token_address TEXT NOT NULL,delta_raw TEXT NOT NULL,decimals INTEGER,side TEXT NOT NULL,quote_value REAL,quote_currency TEXT,occurred_at INTEGER);
+CREATE TABLE IF NOT EXISTS strategies (id TEXT PRIMARY KEY,name TEXT NOT NULL,created_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS strategy_versions (id TEXT PRIMARY KEY,strategy_id TEXT NOT NULL,version INTEGER NOT NULL,created_at INTEGER NOT NULL,parameters TEXT NOT NULL,dataset_id TEXT,stage TEXT NOT NULL DEFAULT 'CANDIDATE', UNIQUE(strategy_id,version));
+CREATE TABLE IF NOT EXISTS signals (id TEXT PRIMARY KEY,token_id TEXT NOT NULL,version_id TEXT,mode TEXT NOT NULL,decision TEXT NOT NULL,score REAL,reasons TEXT NOT NULL,observed_at INTEGER NOT NULL,latency_ms REAL);
+CREATE INDEX IF NOT EXISTS signal_time ON signals(observed_at);
+CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY,mode TEXT NOT NULL,status TEXT NOT NULL,capital_cents INTEGER NOT NULL,cash_cents INTEGER NOT NULL,version_id TEXT,config TEXT NOT NULL,started_at INTEGER NOT NULL,stopped_at INTEGER);
+CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY,idempotency_key TEXT UNIQUE NOT NULL,run_id TEXT,chain TEXT NOT NULL,mode TEXT NOT NULL,side TEXT NOT NULL,token_id TEXT,version_id TEXT,wallet TEXT,state TEXT NOT NULL,input_mint TEXT NOT NULL,output_mint TEXT NOT NULL,amount_raw TEXT NOT NULL,notional_cents INTEGER NOT NULL,epoch INTEGER NOT NULL,policy_revision INTEGER NOT NULL,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,expires_at INTEGER,quote TEXT,build TEXT,simulation TEXT,tx_digest TEXT,signature TEXT,signed_payload TEXT,error TEXT,approved_at INTEGER);
+CREATE INDEX IF NOT EXISTS order_state ON orders(state,mode,chain);
+CREATE TABLE IF NOT EXISTS reservations (order_id TEXT PRIMARY KEY,chain TEXT NOT NULL,wallet TEXT,amount_cents INTEGER NOT NULL,status TEXT NOT NULL,created_at INTEGER NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS one_active_wallet_reservation ON reservations(chain,wallet) WHERE status='ACTIVE';
+CREATE TABLE IF NOT EXISTS executions (id TEXT PRIMARY KEY,order_id TEXT UNIQUE NOT NULL,chain TEXT NOT NULL,hash TEXT,status TEXT NOT NULL,block TEXT,input_raw TEXT,output_raw TEXT,fee_raw TEXT,actual_slippage REAL,confirmed_at INTEGER,raw TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS positions (id TEXT PRIMARY KEY,run_id TEXT,chain TEXT NOT NULL,mode TEXT NOT NULL,token_id TEXT NOT NULL,quantity_raw TEXT NOT NULL,decimals INTEGER NOT NULL,cost_cents INTEGER NOT NULL,realized_cents INTEGER NOT NULL DEFAULT 0,entry_price REAL,high_price REAL,opened_at INTEGER NOT NULL,closed_at INTEGER,version_id TEXT);
+CREATE TABLE IF NOT EXISTS cash_ledger (id TEXT PRIMARY KEY,order_id TEXT UNIQUE NOT NULL,chain TEXT NOT NULL,mode TEXT NOT NULL,at INTEGER NOT NULL,pnl_cents INTEGER NOT NULL,fee_cents INTEGER NOT NULL,valuation_source TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS datasets (id TEXT PRIMARY KEY,created_at INTEGER NOT NULL,start_at INTEGER,end_at INTEGER,snapshot_count INTEGER NOT NULL,digest TEXT NOT NULL,membership TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS backtests (id TEXT PRIMARY KEY,dataset_id TEXT NOT NULL,version_id TEXT NOT NULL,created_at INTEGER NOT NULL,config TEXT NOT NULL,result TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS patterns (id TEXT PRIMARY KEY,created_at INTEGER NOT NULL,wallet_id TEXT,feature TEXT NOT NULL,sample_size INTEGER NOT NULL,result TEXT NOT NULL,status TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY,entity_type TEXT NOT NULL,entity_id TEXT NOT NULL,text TEXT NOT NULL,feedback TEXT,created_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY,type TEXT NOT NULL,state TEXT NOT NULL,payload TEXT NOT NULL,attempts INTEGER DEFAULT 0,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,error TEXT);
+CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT,created_at INTEGER NOT NULL,level TEXT NOT NULL,category TEXT NOT NULL,event TEXT NOT NULL,entity_id TEXT,detail TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS audit_time ON audit_log(created_at);
+`;
+export const defaults={mode:'OBSERVE',trading_enabled:false,epoch:0,policy_revision:1,setup_complete:false,worker_heartbeat:null,live_proof:{},policy:{capital_cents:5000,max_trade_cents:200,max_exposure_cents:1000,max_positions:5,max_daily_loss_cents:1000,max_drawdown_pct:10,max_trades_day:20,max_trades_hour:5,max_slippage_bps:100,max_price_impact_pct:2,max_network_fee_cents:50,min_liquidity:15000,max_data_age_ms:45000,max_quote_age_ms:20000,block_unknown_safety:true},scanner:{interval_ms:15000,retention_days:30,max_tokens:60},execution_wallets:{},risk_overrides:{}};
+export const initialChains=[['solana','solana',null,'https://api.mainnet-beta.solana.com',null,1],['solana-devnet','solana',null,'https://api.devnet.solana.com',null,0],['robinhood','evm',4663,'https://rpc.mainnet.chain.robinhood.com',null,1],['robinhood-testnet','evm',46630,'https://rpc.testnet.chain.robinhood.com',null,0],['base','evm',8453,'https://mainnet.base.org',null,0],['bnb','evm',56,'https://bsc-dataseed.bnbchain.org',null,0]];

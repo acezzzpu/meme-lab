@@ -1,0 +1,13 @@
+{
+  "at": "2026-09-10T02:01:35.281Z",
+  "status": "PASSED",
+  "checks": [
+    "Unauthenticated API rejected",
+    "Authenticated persistent API responds",
+    "Strategy and PAPER session persist through HTTP",
+    "Emergency stop reaches backend and stops run",
+    "Cross-origin mutation rejected",
+    "Export omits secrets",
+    "Built standalone UI served"
+  ]
+}

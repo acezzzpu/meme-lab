@@ -1,0 +1,21 @@
+{
+  "version": "0.3.1",
+  "recorded_at": "2026-09-10T06:38:19.629447+00:00",
+  "unit_regression_tests": {
+    "passed": 130,
+    "failed": 0,
+    "command": "npm test"
+  },
+  "typescript": "PASSED",
+  "standalone_build": "PASSED",
+  "runtime_integration": "PASSED",
+  "read_lanes": "Live block fetch and historical catchup are independent, serialized durable commits",
+  "execution_lane": "Live action processing and signing remain serial; archive decoder does not execute actions",
+  "limitations": [
+    "Regression RPC responses are controlled test data, not a mainnet speed benchmark.",
+    "No new external RPC measurements or funded mainnet transactions in this update.",
+    "Runtime integration ran on Linux, not the user Windows PC.",
+    "Native BNB amount verification still requires compatible trace evidence.",
+    "No 24-hour soak test."
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "at": 1789025012880,
+  "read_only": true,
+  "transactions_sent": 0,
+  "provider": "https://bsc-dataseed.bnbchain.org",
+  "token": "0xc3b13efa308fcfe8daea6cc12608d64b59ea7777",
+  "portal": "0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0",
+  "status": "NOT_VERIFIED",
+  "error": "The operation was aborted due to timeout",
+  "calls": [
+    {
+      "provider": "bnb-public",
+      "method": "eth_chainId",
+      "at": 1789025016883,
+      "duration_ms": 4003.05884,
+      "status": "ERROR",
+      "error": "The operation was aborted due to timeout"
+    }
+  ],
+  "limits": [
+    "No live transaction, quote round trip or cloud deployment verified"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "source": "User export meme-lab-copy-bnb-2026-09-10.json; app_version0.3.1",
+  "current_boot_utc": "2026-09-10T06:43:09.949Z",
+  "runtime_snapshot_utc": "2026-09-10T06:46:15.446Z",
+  "current_head_lag": 0,
+  "current_head": 121024597,
+  "contiguous_cursor": 121023555,
+  "historical_missing_blocks": 685,
+  "source_events_total": 27,
+  "source_transactions_since_boot": 2,
+  "copies_executed": 0,
+  "bub_rejection": {
+    "local_time_utc_minus_3": "03:32:34.435",
+    "before_current_boot": true,
+    "provider_to_detection_ms": 17835,
+    "block_to_action_ms": 20314,
+    "max_signal_age_ms": 2000
+  },
+  "latency_display": {
+    "all_sessions_detection_p50_ms": 11153,
+    "n": 6,
+    "current_session_detection_samples": [
+      {
+        "kind": "APPROVAL",
+        "duration_ms": 1742
+      }
+    ],
+    "note": "Cumulative values include five pre-update observations; no current successful trade sample."
+  },
+  "blocking_evidence": [
+    {
+      "token": "lock in",
+      "reason": "SWAP_POOL_NOT_VERIFIED",
+      "first_swap_log_address": "0x4907da26505772fcaad73ce1a97a2654f5c31ab4",
+      "first_leg_failure_cause": "Not stored in export; needs token0/token1/factory/getPair probe",
+      "block_to_decoded_ms": 2991
+    },
+    {
+      "token": "Stockenized",
+      "events": 3,
+      "historical": true,
+      "method": "debug_traceTransaction",
+      "error": "RPC_-32000: missing trie node"
+    }
+  ],
+  "developer_rpc_probe": {
+    "endpoint": "https://bsc-dataseed.bnbchain.org",
+    "eth_getCode": "TIMEOUT4000ms",
+    "eth_call_factory": "TIMEOUT4000ms",
+    "note": "Failures in the development environment do not negate successful calls from the user PC."
+  },
+  "diagnostic_tool_tests": {
+    "passed": 5,
+    "failed": 0,
+    "network": "Controlled test responses; Windows launcher not executed here."
+  },
+  "reference": "https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-debug#debugtracetransaction"
+}

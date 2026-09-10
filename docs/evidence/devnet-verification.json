@@ -1,0 +1,9 @@
+{
+  "at": "2026-09-10T00:10:02.604Z",
+  "network": "solana-devnet",
+  "wallet": "ALkvBR2kCGY99sqCfNwFPnJUYootZLTqmZwY78Q9Q1Z4",
+  "status": "BLOCKED",
+  "signature": null,
+  "limitations": "Native devnet transfer only. Does not validate Jupiter swaps or mainnet liquidity.",
+  "error": "airdrop to ALkvBR2kCGY99sqCfNwFPnJUYootZLTqmZwY78Q9Q1Z4 failed: Internal error"
+}

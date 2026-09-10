@@ -1,0 +1,5 @@
+import {DatabaseSync,backup} from 'node:sqlite';import {mkdir,copyFile,chmod,writeFile} from 'node:fs/promises';import {resolve} from 'node:path';
+const data=resolve(process.env.DATA_DIR??'.runtime'),destination=resolve(process.argv[2]??('backups/'+new Date().toISOString().replaceAll(':','-')));await mkdir(destination,{recursive:true,mode:0o700});
+const db=new DatabaseSync(resolve(data,'meme-lab.sqlite'),{readOnly:true});try{await backup(db,resolve(destination,'meme-lab.sqlite'));}finally{db.close();}await chmod(resolve(destination,'meme-lab.sqlite'),0o600);
+for(const name of ['master-key','admin-token']){try{await copyFile(resolve(data,name),resolve(destination,name));await chmod(resolve(destination,name),0o600);}catch(e){if(e.code!=='ENOENT')throw e;}}
+await writeFile(resolve(destination,'RESTORE.txt'),'Stop the service, restore meme-lab.sqlite and matching master-key/admin-token into DATA_DIR, then restart. If credentials are environment-owned, retain the same ENCRYPTION_KEY and ADMIN_TOKEN separately. Never restore a live trading backup before reconciling actual wallet state.\n',{mode:0o600});console.log('Consistent backup created:',destination);

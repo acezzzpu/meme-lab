@@ -1,0 +1,93 @@
+{
+  "at": "2026-09-10T03:23:32.801Z",
+  "status": "PASSED",
+  "checks": [
+    "Background worker kept sending heartbeat with no browser",
+    "Paused virtual balance preserved; no orders or funded broadcasts",
+    "Real USDC prices refreshed repeatedly with zero positions",
+    "Real Solana WebSocket event recorded"
+  ],
+  "limits": [],
+  "heartbeat": {
+    "at": 1789010647230,
+    "boot_id": "117be877-1e09-4cd1-ad3b-bf9d1f68bd8a",
+    "pid": 28,
+    "boot_at": 1789010613226,
+    "state": "RUNNING",
+    "last_completed_at": 1789010646046,
+    "last_error": null,
+    "active_jobs": [],
+    "process_uptime_seconds": 34
+  },
+  "prices": [
+    {
+      "token_id": "solana:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "price": 1.00019,
+      "received_at": 1789010619714,
+      "source": "DexScreener REST; retrieval timestamp; source event time unavailable"
+    },
+    {
+      "token_id": "solana:So11111111111111111111111111111111111111112",
+      "price": 101.74,
+      "received_at": 1789010619714,
+      "source": "DexScreener REST; retrieval timestamp; source event time unavailable"
+    },
+    {
+      "token_id": "solana:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "price": 1.00019,
+      "received_at": 1789010645037,
+      "source": "DexScreener REST; retrieval timestamp; source event time unavailable"
+    },
+    {
+      "token_id": "solana:So11111111111111111111111111111111111111112",
+      "price": 101.74,
+      "received_at": 1789010645079,
+      "source": "DexScreener REST; retrieval timestamp; source event time unavailable"
+    }
+  ],
+  "networks": [
+    {
+      "chain": "solana",
+      "status": "CONNECTED",
+      "provider": "solana-rpc.publicnode.com",
+      "last_event": 1789010648941,
+      "last_block": "445780527",
+      "connected_at": 1789010633423,
+      "reconnects": 0,
+      "error": null,
+      "subscription_count": 3
+    }
+  ],
+  "providers": [
+    {
+      "id": "market",
+      "status": "CONNECTED",
+      "latency_ms": 51,
+      "last_success": 1789010645132,
+      "last_attempt": 1789010645132,
+      "error": null,
+      "block": null,
+      "requests": 8
+    },
+    {
+      "id": "solana",
+      "status": "CONNECTED",
+      "latency_ms": 5798,
+      "last_success": 1789010646046,
+      "last_attempt": 1789010646046,
+      "error": null,
+      "block": "445780514",
+      "requests": 2
+    }
+  ],
+  "scan": {
+    "at": 1789010645132,
+    "duration_ms": 9893,
+    "tokens_processed": 4,
+    "signals": 0,
+    "rejected": 0,
+    "discovery": "Filtered on-chain pool streams + indexed profiles + rotating tracked tokens"
+  },
+  "errors": [],
+  "duration_seconds": 36
+}

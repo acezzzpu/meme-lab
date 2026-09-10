@@ -1,0 +1,74 @@
+{
+  "captured_at": "2026-09-10T05:34:36.467400+00:00",
+  "target": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+  "chain_id": 56,
+  "sample_size": 2,
+  "scope": "Two observed target-originated purchases; not a complete history or profitability analysis. No sell captured. Metadata fetched at latest, not guaranteed at transaction block.",
+  "transactions": [
+    {
+      "hash": "0x4f1caec89492578df33b2b1f7864d8155ac824a9c65f41fd66956630470dcb20",
+      "block": 121013722,
+      "timestamp_utc": "2026-09-10T05:24:37+00:00",
+      "nonce": 46109,
+      "router": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "selector": "0x4d819a2a",
+      "native_value_wei": "10000000000000000",
+      "gas_fee_wei": "77413320000000",
+      "status": "0x1",
+      "incoming_tokens": [
+        {
+          "address": "0x7f161c27dc558170f797d856539689b48ae47777",
+          "received_raw": "542203247207399436981715"
+        }
+      ],
+      "native_net_cost_verified": false,
+      "receipt_fixture": "/tmp/bnb-target-evidence/0x4f1caec89492578df33b2b1f7864d8155ac824a9c65f41fd66956630470dcb20.json"
+    },
+    {
+      "hash": "0xba845a505ed4c648988d9c55435317fcef6014adb5cc3854c8e2b26b74f3c445",
+      "block": 121014319,
+      "timestamp_utc": "2026-09-10T05:29:06+00:00",
+      "nonce": 46121,
+      "router": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "selector": "0x4d819a2a",
+      "native_value_wei": "10000000000000000",
+      "gas_fee_wei": "34223040000000",
+      "status": "0x1",
+      "incoming_tokens": [
+        {
+          "address": "0x8dd50128acb78102743ba65553f55793e9ee7d10",
+          "received_raw": "46968969143457892020698"
+        }
+      ],
+      "native_net_cost_verified": false,
+      "receipt_fixture": "/tmp/bnb-target-evidence/0xba845a505ed4c648988d9c55435317fcef6014adb5cc3854c8e2b26b74f3c445.json"
+    }
+  ],
+  "router_counts": [
+    {
+      "address": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "selector": "0x4d819a2a",
+      "count": 2,
+      "denominator": 2
+    }
+  ],
+  "route_coverage": [
+    {
+      "transaction": "0x4f1caec89492578df33b2b1f7864d8155ac824a9c65f41fd66956630470dcb20",
+      "authenticated_pool_legs": 2,
+      "observed_pool_legs": 3,
+      "unverified_pool": "0x09eaecef56828fcc6b1e4c1ed1ab24e1186f586e"
+    },
+    {
+      "transaction": "0xba845a505ed4c648988d9c55435317fcef6014adb5cc3854c8e2b26b74f3c445",
+      "authenticated_pool_legs": 2,
+      "observed_pool_legs": 2,
+      "note": "See pool-authentication-second.json for independent factory getPool checks."
+    }
+  ],
+  "sources": [
+    "https://bsc-dataseed.bnbchain.org",
+    "https://docs.bnbchain.org/bnb-smart-chain/developers/json_rpc/json-rpc-endpoint/",
+    "https://api.openchain.xyz/signature-database/v1/lookup?function=0x4d819a2a"
+  ]
+}

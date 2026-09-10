@@ -1,0 +1,47 @@
+{
+  "status": "PASSED",
+  "started_at": "2026-09-10T07:20:16.800Z",
+  "scope": "Actual API, supervisor, worker and SQLite; local isolated cloud-style configuration",
+  "checks": [
+    {
+      "name": "Authenticated cloud runtime and Secure session cookie",
+      "api": "OK",
+      "runtime": "standalone",
+      "location": "cloud",
+      "secure_cookie": true,
+      "master_key_restricted": true,
+      "signer": "NOT_CONFIGURED"
+    },
+    {
+      "name": "Engine continues with SSE closed and no HTTP requests",
+      "closed_at": 1789024819293,
+      "observation_ms": 6501,
+      "heartbeat_advanced": true,
+      "uptime_advanced": true
+    },
+    {
+      "name": "Server restart preserves SQLite, master-key, saved settings and encrypted data",
+      "new_worker_boot": true,
+      "database_preserved": true,
+      "master_key_preserved": true,
+      "settings_preserved": true,
+      "encrypted_marker_readable": true,
+      "prior_session_rejected": true
+    },
+    {
+      "name": "Stopped engine remains healthy; no configured providers or transactions",
+      "health": 200,
+      "enabled_chains": 0,
+      "copy_providers": 0,
+      "orders": 0,
+      "copy_actions": 0,
+      "copy_receipts": 0
+    }
+  ],
+  "external_network_attempts": [],
+  "transactions": 0,
+  "limitations": [
+    "Does not validate Render provisioning, proxy TLS/SSE behavior, live providers, trading performance or 24-hour uptime. Secure cookie is inspected over loopback HTTP, not tested by a browser."
+  ],
+  "duration_seconds": 11.472
+}

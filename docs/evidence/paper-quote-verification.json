@@ -1,0 +1,80 @@
+{
+  "at": "2026-09-10T02:02:40.465Z",
+  "quote": {
+    "provider": "Jupiter Swap v2",
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "So11111111111111111111111111111111111111112",
+    "inAmount": "2000000",
+    "outAmount": "19781516",
+    "minOut": "19583700",
+    "slippageBps": 100,
+    "priceImpactPct": 0.001300915717387544,
+    "route": [
+      {
+        "percent": 100,
+        "bps": 10000,
+        "usdValue": 1.9997222778127306,
+        "swapInfo": {
+          "ammKey": "8sKQHfjNhvmAw94PhfvfMcytmqW6jmxvwieYyzXCCPu",
+          "label": "HumidiFi",
+          "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "outputMint": "So11111111111111111111111111111111111111112",
+          "inAmount": "2000000",
+          "outAmount": "19785473"
+        }
+      }
+    ],
+    "quotedAt": 1789005760465,
+    "raw": {
+      "swapType": "aggregator",
+      "inAmount": "2000000",
+      "outAmount": "19781516",
+      "otherAmountThreshold": "19583700",
+      "swapMode": "ExactIn",
+      "slippageBps": 100,
+      "priceImpactPct": "0.00001300915717387544",
+      "routePlan": [
+        {
+          "percent": 100,
+          "bps": 10000,
+          "usdValue": 1.9997222778127306,
+          "swapInfo": {
+            "ammKey": "8sKQHfjNhvmAw94PhfvfMcytmqW6jmxvwieYyzXCCPu",
+            "label": "HumidiFi",
+            "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "outputMint": "So11111111111111111111111111111111111111112",
+            "inAmount": "2000000",
+            "outAmount": "19785473"
+          }
+        }
+      ],
+      "feeMint": "So11111111111111111111111111111111111111112",
+      "feeBps": 2,
+      "platformFee": {
+        "feeBps": 2,
+        "feeMint": "So11111111111111111111111111111111111111112"
+      },
+      "signatureFeeLamports": 0,
+      "signatureFeePayer": null,
+      "prioritizationFeeLamports": 0,
+      "prioritizationFeePayer": null,
+      "rentFeeLamports": 0,
+      "rentFeePayer": null,
+      "transaction": null,
+      "gasless": false,
+      "jitOptimized": false,
+      "taker": null,
+      "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "outputMint": "So11111111111111111111111111111111111111112",
+      "router": "metis",
+      "guaranteedPrice": false,
+      "requestId": "01a0890d-8683-706a-b91c-9d7614a411ec",
+      "inUsdValue": 1.9997222778127306,
+      "outUsdValue": 1.9997482925141468,
+      "swapUsdValue": 1.9997222778127306,
+      "priceImpact": 0.001300915717387544,
+      "mode": "manual",
+      "totalTime": 160
+    }
+  }
+}

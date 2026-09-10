@@ -1,0 +1,23 @@
+{
+  "version": "0.3.0",
+  "verified_at": "2026-09-10T05:53:27.974556+00:00",
+  "unit_and_regression_tests": {
+    "total": 108,
+    "passed": 108,
+    "failed": 0
+  },
+  "typescript": "PASSED",
+  "standalone_build": "PASSED",
+  "site_build": "PASSED",
+  "signer": "LOCALLY_TESTED",
+  "runtime_recovery": "LOCALLY_TESTED",
+  "live_data": "Two real target receipts and two real QuoterV2 calls; see bnb-target fixtures",
+  "external_wss": "NOT_VALIDATED",
+  "full_live_route_adapter": "INCOMPLETE_TRANSPORT_TIMEOUT",
+  "shadow_with_funded_wallet": "NOT_VALIDATED",
+  "testnet": "NOT_VALIDATED",
+  "mainnet_own_buy_sell": "NOT_VALIDATED",
+  "mainnet_transactions_sent": 0,
+  "windows_installer": "NOT_EXECUTED_ON_WINDOWS",
+  "browser_visual_qa": "NOT_PERFORMED"
+}

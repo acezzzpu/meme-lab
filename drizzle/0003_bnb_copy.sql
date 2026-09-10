@@ -1,0 +1,24 @@
+
+CREATE TABLE IF NOT EXISTS copy_targets(id TEXT PRIMARY KEY,address TEXT NOT NULL UNIQUE,label TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 1,config TEXT NOT NULL,created_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_events(id TEXT PRIMARY KEY,target_id TEXT NOT NULL,hash TEXT NOT NULL,block INTEGER,block_hash TEXT,tx_index INTEGER,kind TEXT NOT NULL,status TEXT NOT NULL,detected_at INTEGER NOT NULL,data TEXT NOT NULL,UNIQUE(target_id,hash));
+CREATE INDEX IF NOT EXISTS copy_events_target_time ON copy_events(target_id,detected_at);
+CREATE TABLE IF NOT EXISTS copy_actions(id TEXT PRIMARY KEY,event_id TEXT NOT NULL,target_id TEXT NOT NULL,mode TEXT NOT NULL,side TEXT NOT NULL,token TEXT,state TEXT NOT NULL,epoch INTEGER NOT NULL,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,hash TEXT,nonce INTEGER,amount_raw TEXT NOT NULL DEFAULT '0',reserved_raw TEXT NOT NULL DEFAULT '0',error TEXT,data TEXT NOT NULL,UNIQUE(event_id,mode));
+CREATE INDEX IF NOT EXISTS copy_actions_state ON copy_actions(state,created_at);
+CREATE TABLE IF NOT EXISTS copy_positions(id TEXT PRIMARY KEY,target_id TEXT NOT NULL,mode TEXT NOT NULL,token TEXT NOT NULL,quantity_raw TEXT NOT NULL,cost_raw TEXT NOT NULL,realized_raw TEXT NOT NULL DEFAULT '0',opened_at INTEGER NOT NULL,closed_at INTEGER,data TEXT NOT NULL,UNIQUE(target_id,mode,token));
+CREATE TABLE IF NOT EXISTS copy_ledger(id TEXT PRIMARY KEY,action_id TEXT NOT NULL UNIQUE,mode TEXT NOT NULL,delta_raw TEXT NOT NULL,pnl_raw TEXT NOT NULL,fee_raw TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_provider_health(id TEXT PRIMARY KEY,status TEXT NOT NULL,data TEXT NOT NULL,updated_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_receipts(hash TEXT PRIMARY KEY,action_id TEXT NOT NULL,status TEXT NOT NULL,data TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_samples(id TEXT PRIMARY KEY,event_id TEXT,provider TEXT NOT NULL,kind TEXT NOT NULL,at INTEGER NOT NULL,duration_ms REAL,data TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS copy_samples_kind_time ON copy_samples(kind,at);
+CREATE TABLE IF NOT EXISTS copy_blocks(number INTEGER PRIMARY KEY,hash TEXT NOT NULL,parent_hash TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_jobs(id TEXT PRIMARY KEY,kind TEXT NOT NULL,state TEXT NOT NULL,payload TEXT NOT NULL,available_at INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,error TEXT);
+CREATE INDEX IF NOT EXISTS copy_jobs_ready ON copy_jobs(state,available_at);
+
+INSERT OR IGNORE INTO settings VALUES ('copy_config','{"enabled":false,"paused":false,"epoch":0,"revision":1,"allocation_bnb":"0.1","paper_capital_bnb":"0.1","shadow_capital_bnb":"0.1","max_trade_bnb":"0.005","max_exposure_bnb":"0.03","max_positions":5,"max_daily_loss_bnb":"0.01","max_consecutive_losses":5,"max_gas_bnb":"0.0001","max_slippage_bps":100,"max_price_impact_pct":2,"max_quote_age_ms":1500,"deadline_seconds":20,"confirmations":1,"block_unknown_safety":true,"execution_wallet":null,"live_enabled":false,"auto_armed":false}',0);
+INSERT OR IGNORE INTO settings VALUES ('copy_providers','[{"id":"bnb-public","label":"BNB public RPC","http_url":"https://bsc-dataseed.bnbchain.org","ws_url":null,"enabled":true,"pending":"NONE"}]',0);
+INSERT OR IGNORE INTO settings VALUES ('copy_runtime','null',0);
+INSERT OR IGNORE INTO settings VALUES ('copy_cursor','null',0);
+INSERT OR IGNORE INTO settings VALUES ('copy_signer','{"status":"NOT_CONFIGURED","address":null}',0);
+INSERT OR IGNORE INTO settings VALUES ('copy_wallet','null',0);
+INSERT OR IGNORE INTO settings VALUES ('copy_live_proof','null',0);
+INSERT OR IGNORE INTO copy_targets VALUES ('0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f','0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f','Narrativas BNB',1,'{"mode":"PAPER","size_mode":"FIXED_BNB","fixed_bnb":"0.002","fixed_usd":2,"capital_pct":2,"proportional_pct":1,"exit_mode":"MIRROR_EXIT_PCT","max_signal_age_ms":2000,"max_price_gap_pct":5,"max_position_bnb":"0.01","min_target_bnb":"0","min_liquidity_usd":15000,"stop_loss_pct":15,"take_profit_pct":30,"max_hold_minutes":60,"baseline":false}',0);

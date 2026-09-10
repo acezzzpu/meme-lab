@@ -1,0 +1,39 @@
+{
+  "transaction_hash": "0xba845a505ed4c648988d9c55435317fcef6014adb5cc3854c8e2b26b74f3c445",
+  "abi_signature": "swap((uint8,address,address,address,uint24,int24,address,bytes,address,bytes32)[],address,uint256,uint256,uint256)",
+  "signature_source": "https://api.openchain.xyz/signature-database/v1/lookup?function=0x4d819a2a",
+  "warning": "Selector registry and decoded values do not authenticate contract identity or exact semantics of unnamed arguments.",
+  "selector": "0x4d819a2a",
+  "args": [
+    [
+      [
+        "1",
+        "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "0xfa6D9B504848606Eb9aeC04CCc161D169B3f2159",
+        "0x3eA3f9a7B7EDBfe0Ba3568BFc0f30Ba870B7553d",
+        "10000",
+        "200",
+        "0x0000000000000000000000000000000000000000",
+        "0x",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      [
+        "1",
+        "0xfa6D9B504848606Eb9aeC04CCc161D169B3f2159",
+        "0x8dD50128ACb78102743BA65553F55793E9ee7d10",
+        "0x57d25ba5Acf3990c3cA44348e0528CEBF612AE56",
+        "10000",
+        "200",
+        "0x0000000000000000000000000000000000000000",
+        "0x",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      ]
+    ],
+    "0x0000000000000000000000000000000000000000",
+    "10000000000000000",
+    "28181381486074735212419",
+    "1789018156"
+  ]
+}

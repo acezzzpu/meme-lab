@@ -1,0 +1,36 @@
+# One permanent process and one persistent disk. See docs/CLOUD.md.
+services:
+  - type: web
+    name: meme-lab-engine
+    runtime: node
+    region: virginia
+    plan: 1c-2g
+    numInstances: 1
+    autoDeployTrigger: commit
+    buildCommand: npm ci --ignore-scripts --include=dev && npm test && npm run build:standalone
+    startCommand: node runtime/server.mjs
+    healthCheckPath: /healthz
+    maxShutdownDelaySeconds: 30
+    disk:
+      name: meme-lab-data
+      mountPath: /opt/render/project/src/.runtime
+      sizeGB: 10
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "10000"
+      - key: DATA_DIR
+        value: /opt/render/project/src/.runtime
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: RUNTIME_LOCATION
+        value: cloud
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: REMOTE_API_TOKEN
+        generateValue: true

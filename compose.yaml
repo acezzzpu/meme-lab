@@ -1,0 +1,16 @@
+services:
+  meme-lab:
+    build: .
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 25s
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - meme-data:/data
+    environment:
+      HOST: 0.0.0.0
+      DATA_DIR: /data
+      PORT: 8787
+volumes:
+  meme-data:
