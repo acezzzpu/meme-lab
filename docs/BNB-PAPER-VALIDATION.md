@@ -21,6 +21,8 @@ PAPER uses its own virtual cash/inventory and current route quotes without a fun
 
 ## Prepared server configuration
 
+Render validation exposed HTTP 429 responses during block recovery even though isolated HTTP and full-block reads were fast. A concurrency limit alone permits request bursts when responses are fast. Environment providers now pace HTTP starts (8/s by default) and the separate historical process is capped at 2/s per provider. Urgent queued requests get the next available slot. `BSC_PRIMARY_RPS` and the equivalent role variables may be raised only within the account's total allowance, including history and other consumers. This does not replace an independent secondary provider or prove live trade acceptance.
+
 Set these on Render → meme-lab-engine → Environment, or in the gitignored local `.env.copy-paper` for local verification:
 
 | Variable | Required capability |
