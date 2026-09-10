@@ -8,17 +8,19 @@ import {digest,http,json,fail} from './util.mjs';
 export async function pollWallet(store,walletId){
  const wallet=await store.get('SELECT * FROM wallets WHERE id=?',walletId),watch=await store.get('SELECT * FROM watched_wallets WHERE wallet_id=?',walletId);if(!wallet||!watch?.enabled)return;
  const chain=await store.get('SELECT * FROM chains WHERE id=?',wallet.chain);if(!chain?.enabled)return;
- let hashes=[],before=null,more=false;
+ let hashes=[],before=null,more=false;const occurredAt=new Map();
  if(chain.family==='solana'){
   const page=await adapter(chain).rpc('getSignaturesForAddress',[wallet.address,{commitment:'confirmed',limit:25,...(watch.head?{until:watch.head}:{}),...(watch.catchup_before?{before:watch.catchup_before}:{})}]);
   hashes=page.map(s=>s.signature);more=page.length===25;before=page.at(-1)?.signature??null;
+  for(const s of page)if(Number.isFinite(s.blockTime))occurredAt.set(s.signature,s.blockTime*1000);
  }else{
   fail(['robinhood','robinhood-testnet'].includes(chain.id),'WATCH_INDEXER_NOT_CONFIGURED');
   const base=chain.id==='robinhood'?'https://robinhoodchain.blockscout.com':'https://explorer.testnet.chain.robinhood.com';
   const page=await http(base+'/api/v2/addresses/'+wallet.address+'/transactions'+(watch.catchup_before?'?'+new URLSearchParams(json(watch.catchup_before,{})):''));
   const items=page.items??[];const end=items.findIndex(t=>t.hash===watch.head);hashes=(end<0?items:items.slice(0,end)).map(t=>t.hash);more=end<0&&!!page.next_page_params;before=more?JSON.stringify(page.next_page_params):null;
  }
- for(const hash of [...hashes].reverse())await enqueue(store,'wallet:'+wallet.id+':'+hash,'WALLET_TX',{wallet_id:wallet.id,hash});
+ const observedAt=Date.now();
+ for(const hash of [...hashes].reverse())await enqueue(store,'wallet:'+wallet.id+':'+hash,'WALLET_TX',{wallet_id:wallet.id,hash,source:chain.family==='solana'?'RPC':'INDEXER',observed_at:observedAt,occurred_at:occurredAt.get(hash)??null});
  const head=watch.catchup_head??hashes[0]??watch.head;
  await store.run('UPDATE watched_wallets SET head=?,catchup_before=?,catchup_head=?,last_sync=?,error=NULL WHERE wallet_id=?',more?watch.head:head,more?before:null,more?head:null,Date.now(),walletId);
  if(more)await emit(store,'TRADER','Recuperando actividad pendiente del trader',{wallet_id:wallet.id,page_size:hashes.length},chain.id,wallet.id);
