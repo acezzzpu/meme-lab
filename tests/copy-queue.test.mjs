@@ -127,11 +127,11 @@ test('copy timestamps include hour, minute, second and millisecond, not only fra
  const value=copyTime(new Date(2026,8,10,3,17,5,600).getTime());assert.match(value,/03:17:05[.,]600/);assert.equal(copyTime(null),'—');
 });
 
-test('an expired legacy observed block is recovered as history and never promoted to a current signal',async t=>{
+test('a late observed block retains its warning independently of historical recovery',async t=>{
  const {e,store}=await fixture(t);e.rpc.call=async()=>({number:'0x64',hash:h(100),parentHash:h(99),timestamp:'0x1',transactions:[{from:TARGET,hash}]});
  await e.block({height:100,method:'HTTP_FALLBACK',history:false,received_at:Date.now()});
  const p=decode((await store.get("SELECT payload FROM copy_jobs WHERE kind='TARGET'")).payload);
- assert.equal(p.history,true);assert.equal(p.history_reason,'EXPIRED_AT_BLOCK_READ');assert.equal(p.block.transactions,undefined);
+ assert.equal(p.history,false);assert.equal(p.late,true);assert.equal(p.late_reason,'EXPIRED_AT_BLOCK_READ');assert.equal(p.block.transactions.length,1);assert.equal(p.block.transactions[0].hash,hash);
 });
 test('old non-historical target backlog does not take precedence over a newly received event',async t=>{
  const {e}=await fixture(t);e.blockLanes=true;const seen=[];e.ingest=async p=>seen.push(p.hash);

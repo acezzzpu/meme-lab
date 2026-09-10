@@ -25,7 +25,7 @@ export async function observeHead(e,o){
   let attached=false;
   if(hash&&existing&&!expected){const result=await e.store.run("UPDATE copy_jobs SET payload=json_set(payload,'$.expected_hash',?) WHERE id=? AND state='QUEUED'",hash,id);attached=result.changes===1;}
   const verify=hash&&(prior||existing&&hash!==expected&&!attached);
-  await e.job(verify?id+':'+hash:id,'BLOCK',{height,expected_hash:hash,provider:o.provider,received_at:o.received_at,method:o.method});
+  await e.job(verify?id+':'+hash:id,'BLOCK',{height,expected_hash:hash,provider:o.provider,received_at:o.received_at,method:o.method,received_mono:o.received_mono,clock_boot:e.boot});
  }
  e.seenHeads.set(pair,true);if(e.seenHeads.size>400)e.seenHeads.delete(e.seenHeads.keys().next().value);
  await e.sample('HEAD',null,null,o.provider,{block:height,provider_received_at:o.received_at,method:o.method});
@@ -61,12 +61,13 @@ export async function commitBlock(e,p,b){
   if(p.expected_hash&&p.expected_hash!==b.hash||prior&&prior.hash!==b.hash||parent&&parent.hash!==b.parentHash||child&&child.parent_hash!==b.hash){
    await e.reorg(parent&&parent.hash!==b.parentHash?p.height-1:p.height,'BLOCK_HASH_CHANGED');return;
   }
-  const header={number:b.number,hash:b.hash,parentHash:b.parentHash,timestamp:b.timestamp};
+  const header={number:b.number,hash:b.hash,parentHash:b.parentHash,timestamp:b.timestamp,transactions:b.transactions.filter(tx=>typeof tx==='object'&&e.targets.some(t=>t.address===tx.from?.toLowerCase()||t.address===tx.to?.toLowerCase())).map(tx=>({from:tx.from,to:tx.to,hash:tx.hash}))};
   const statements=[];
   for(const tx of b.transactions){if(typeof tx==='string')continue;const target=e.targets.find(t=>t.address===addr(tx.from));if(!target)continue;
+   statements.push(["INSERT INTO copy_source_transactions VALUES (56,?,'INCLUDED_AWAITING_RECEIPT',?,?,?) ON CONFLICT(chain_id,hash) DO UPDATE SET status=CASE WHEN copy_source_transactions.status='PENDING' THEN excluded.status ELSE copy_source_transactions.status END,last_seen_at=excluded.last_seen_at",[tx.hash,Date.now(),Date.now(),encode({tx,source:p.method??'BLOCK',block_number:p.height,receipt_status:'AWAITING_RECEIPT'})]]);
    const targetAt=Number(BigInt(b.timestamp))*1000,expired=Date.now()-targetAt>(decode(target.config).max_signal_age_ms??2000);
-   const payload={target:target.id,hash:tx.hash,tx,block:header,provider:p.provider,received_at:p.received_at,method:p.method,history:!!p.history||expired,history_reason:p.history?'RECOVERY':expired?'EXPIRED_AT_BLOCK_READ':null,target_at:targetAt,block_number:p.height,tx_index:Number(BigInt(tx.transactionIndex??0))};
-   statements.push(["INSERT OR IGNORE INTO copy_jobs VALUES (?,?,'QUEUED',?,?,0,NULL)",['tx:'+target.id+':'+tx.hash,'TARGET',encode(payload),Date.now()]]);
+   const payload={target:target.id,hash:tx.hash,tx,block:header,provider:p.provider,received_at:Date.now(),received_mono:performance.now(),clock_boot:e.boot,head_received_at:p.received_at,method:p.method,history:!!p.history,history_reason:p.history?'RECOVERY':null,late:expired,late_reason:expired?'EXPIRED_AT_BLOCK_READ':null,target_at:targetAt,block_number:p.height,tx_index:Number(BigInt(tx.transactionIndex??0))};
+   if(p.clock_boot===e.boot&&Number.isFinite(p.received_mono))await e.sample('BLOCK_DETECTION_MS',performance.now()-p.received_mono,null,p.provider??'rpc',{hash:tx.hash,clock:'MONOTONIC_LOCAL',meaning:'Head notification to target transaction identified'});statements.push(["INSERT OR IGNORE INTO copy_jobs VALUES (?,?,'QUEUED',?,?,0,NULL)",['tx:'+target.id+':'+tx.hash,'TARGET',encode(payload),Date.now()]]);
   }
   // The block is complete iff all of its target jobs were committed atomically.
   statements.push(['INSERT OR IGNORE INTO copy_blocks VALUES (?,?,?,?)',[p.height,b.hash,b.parentHash,Date.now()]]);
@@ -85,12 +86,13 @@ export async function blockWork(e,recovery){
  if(e.closed||!e.rpc)return false;
  const config=await e.store.setting('copy_config');
  if(!config.enabled||await e.store.setting('engine_desired')!=='RUNNING'||await e.store.setting('copy_reconciliation_required'))return false;
- const filter=recovery?'':"AND json_extract(payload,'$.history') IS NOT 1";
+ const filter=recovery?"AND (json_extract(payload,'$.history')=1 OR COALESCE(json_extract(payload,'$.received_at'),0)<?)":"AND json_extract(payload,'$.history') IS NOT 1 AND COALESCE(json_extract(payload,'$.received_at'),0)>=?";
  const order=recovery?"CASE WHEN json_extract(payload,'$.history')=1 THEN 0 ELSE 1 END,json_extract(payload,'$.height') ASC":"json_extract(payload,'$.height') DESC";
- const job=await e.store.get(`SELECT * FROM copy_jobs WHERE kind='BLOCK' AND state='QUEUED' AND available_at<=? ${filter} ORDER BY ${order},available_at LIMIT 1`,Date.now());
+ const job=await e.store.get(`SELECT * FROM copy_jobs WHERE kind='BLOCK' AND state='QUEUED' AND available_at<=? ${filter} ORDER BY ${order},available_at LIMIT 1`,Date.now(),e.options.liveBoot??e.boot??0);
  if(!job)return false;
  const claimed=await e.store.run("UPDATE copy_jobs SET state='RUNNING',attempts=attempts+1 WHERE id=? AND state='QUEUED'",job.id);if(!claimed.changes)return false;
  const p=decode(job.payload),legacyHash=job.id.split(':')[2];if(!p.expected_hash&&/^0x[\da-fA-F]{64}$/.test(legacyHash??''))p.expected_hash=legacyHash;
+ if(recovery)p.history=true;
  try{await e.block(p);await e.store.run("UPDATE copy_jobs SET state='DONE',error=NULL WHERE id=?",job.id);}
  catch(error){await e.failJob(job,error);}return true;
 }

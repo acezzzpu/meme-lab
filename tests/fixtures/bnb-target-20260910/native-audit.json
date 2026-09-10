@@ -1,0 +1,459 @@
+{
+  "label": "HISTORICAL_NATIVE_AUDIT_TRACE_OUTSIDE_CRITICAL_PATH",
+  "target": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+  "at": "2026-09-10T22:02:37.011Z",
+  "count": 20,
+  "side_matches": 20,
+  "results": [
+    {
+      "hash": "0x9cf5be13034e93c7098c0b7b86c474781f34dd3beae41a9f918d2a3fb316dbd0",
+      "nonce": 46586,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xd29cbde342a8d4699f6525e0d9e5959fc4ed7777",
+      "target_tokens_raw": "249338552012773284451248",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0x8045380abdfc8bffc8d7942897889ed1dd37e6cd0b5c8233d7b47f649ba49407",
+      "nonce": 46587,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xfa53228bdf886f0717cfc2e3646a982ca43d7777",
+      "target_tokens_raw": "12874414770666770195847",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0x1e477a28464fa6bc55a893cbc76c97e843228f55ecca28b41bac84365465e16c",
+      "nonce": 46588,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xfa53228bdf886f0717cfc2e3646a982ca43d7777",
+      "target_tokens_raw": "12153500644585392745288",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0xed43fd18f649ed7c6ba2cffcc1a0f03cc178a462534a476ff7e71a5710106d90",
+      "nonce": 46591,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xfa53228bdf886f0717cfc2e3646a982ca43d7777",
+      "target_tokens_raw": "13621587960788144966928",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0x62336f12a1aea5432504c3cd53a6cbe7f47073e871f1900734da5b1dbf6f4d98",
+      "nonce": 46592,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xfa53228bdf886f0717cfc2e3646a982ca43d7777",
+      "target_tokens_raw": "13161073409855130979265",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0xbb2590ea06c84b939e39e9d33ef9bd35de7547e35801f2dfb4ad0db45e7b7744",
+      "nonce": 46593,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xfa53228bdf886f0717cfc2e3646a982ca43d7777",
+      "target_tokens_raw": "14947023035138817067776",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0x67c3c0149024ec92934d648ff1f96f6c1af4ddd5d215bca366ce866fb4431a34",
+      "nonce": 46594,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xfa53228bdf886f0717cfc2e3646a982ca43d7777",
+      "target_tokens_raw": "12985307285839214373541",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0xeefaed394475b26e9defb6659de55ec918afed3d0ccf5174215d14ab5cb6c106",
+      "nonce": 46595,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xfa53228bdf886f0717cfc2e3646a982ca43d7777",
+      "target_tokens_raw": "11679071001508249559695",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0x8cba51da7e9c1ff752814de65f476958e52c540320b2ab2422e4b88e464d92bc",
+      "nonce": 46596,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xa157a4f71756751eca4234eeda9dd8782f437777",
+      "target_tokens_raw": "114573917673972034408086",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0x6396576e3bd16a77c7ef83b6770d97e5d202758b2b46db6a1056dd9f71972f9c",
+      "nonce": 46597,
+      "decoded_side": "BUY",
+      "onchain_native_side": "BUY",
+      "side_match": true,
+      "token": "0xa7092f5c2ca9097bcbcaf7af01b03697b4907777",
+      "target_tokens_raw": "103730610755016881447493",
+      "decoder_quote_raw": "10000000000000000",
+      "exact_native_raw": "10000000000000000",
+      "native_quote_difference_raw": "0",
+      "native_quote_exact": true,
+      "quote_estimate": "TX_VALUE_UPPER_BOUND_REFUNDS_AND_ROUTER_FEES_UNRESOLVED",
+      "native_transfers": [
+        {
+          "from": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "to": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "value_raw": "10000000000000000",
+          "direction": "OUT"
+        }
+      ]
+    },
+    {
+      "hash": "0x0fbe62ff226fa205b65bf3eefccb342f25d221cb3ee2bf57ea33f191413d137d",
+      "nonce": 46581,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0xa157a4f71756751eca4234eeda9dd8782f437777",
+      "target_tokens_raw": "103586163606784866651079",
+      "decoder_quote_raw": "10832135921987051",
+      "exact_native_raw": "10723814562767181",
+      "native_quote_difference_raw": "108321359219870",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.05049,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "10723814562767181",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0x7345a701afdfc7b32e4c9b429f662e4480a48d2fdc923b6bafc27901995b3638",
+      "nonce": 46583,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0xa157a4f71756751eca4234eeda9dd8782f437777",
+      "target_tokens_raw": "87059040742285544379272",
+      "decoder_quote_raw": "9219504979118139",
+      "exact_native_raw": "9127309929326958",
+      "native_quote_difference_raw": "92195049791181",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.044691,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "9127309929326958",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0xf236b389e6eb037c411a2af6723f619bb62ead093cba23aea482d2df6433f751",
+      "nonce": 46585,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0x0e6db6f05fc68597395943f1ad8b24101409ffff",
+      "target_tokens_raw": "2456871483913125519984",
+      "decoder_quote_raw": "9578176832288774",
+      "exact_native_raw": "9482395063965887",
+      "native_quote_difference_raw": "95781768322887",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 1,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "9482395063965887",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0xf865d646368538a9085c1231469a1d3f680646a1b42361a7ae8cd9c5d72a0e06",
+      "nonce": 46590,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0xee22fce582dc4120f07e13e42b55ee75246e7777",
+      "target_tokens_raw": "13954150867140174082165",
+      "decoder_quote_raw": "10201571730043948",
+      "exact_native_raw": "10099556012743509",
+      "native_quote_difference_raw": "102015717300439",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.109214,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "10099556012743509",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0x15aa199dd57c3389b4ab7122b5c0c0f4f5a2d381591b235dbe0e9ada4c562bb4",
+      "nonce": 46605,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0x06f7aeabc9c37d457922a9368f291c5d57c07777",
+      "target_tokens_raw": "3965643608846838684338",
+      "decoder_quote_raw": "9504357042343863",
+      "exact_native_raw": "9409313471920425",
+      "native_quote_difference_raw": "95043570423438",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.200475,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "9409313471920425",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0xfd9893c5f74d843be73114c02fe0f94a631a35360b1bd63944bce9c56fe492c9",
+      "nonce": 46607,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0xa5210817fa5a439808e26ff23f21825c64a57777",
+      "target_tokens_raw": "256451592533542808123544",
+      "decoder_quote_raw": "2087289784962801",
+      "exact_native_raw": "2066416887113173",
+      "native_quote_difference_raw": "20872897849628",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.380725,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "2066416887113173",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0x4a19bfe49e031ea43869c07dad7af037c808c2ff24856e47f41f2f22397a97c2",
+      "nonce": 46609,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0x418512c3e4b00d9eafe5dc18f326593a264f7777",
+      "target_tokens_raw": "123723477414021313447935",
+      "decoder_quote_raw": "1285634467110700",
+      "exact_native_raw": "1272778122439593",
+      "native_quote_difference_raw": "12856344671107",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.404449,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "1272778122439593",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0xca5d77d229abab07e5aecdfae1279482823990f19bfc62285d6bf271518b1b30",
+      "nonce": 46611,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0xa9abcccbb4a555a9f4f92bbda40d6071f6de7777",
+      "target_tokens_raw": "141541745789679070469151",
+      "decoder_quote_raw": "852813470514300",
+      "exact_native_raw": "844285335809157",
+      "native_quote_difference_raw": "8528134705143",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 1,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "844285335809157",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0xd4007d88ffa456c1d35b705b6c71081f3e00db4c50df17ffc33a2342abaeb250",
+      "nonce": 46617,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0xee22fce582dc4120f07e13e42b55ee75246e7777",
+      "target_tokens_raw": "10958301893450644224978",
+      "decoder_quote_raw": "9808139781251510",
+      "exact_native_raw": "9710058383438995",
+      "native_quote_difference_raw": "98081397812515",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.096282,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "9710058383438995",
+          "direction": "IN"
+        }
+      ]
+    },
+    {
+      "hash": "0xf498649cdc55cd0d6518074c90f513e6f63782cabbd0b3152bd5ec4b867866b4",
+      "nonce": 46619,
+      "decoded_side": "SELL",
+      "onchain_native_side": "SELL",
+      "side_match": true,
+      "token": "0xee22fce582dc4120f07e13e42b55ee75246e7777",
+      "target_tokens_raw": "10592391582171343964101",
+      "decoder_quote_raw": "9838144492631043",
+      "exact_native_raw": "9739763047704733",
+      "native_quote_difference_raw": "98381444926310",
+      "native_quote_exact": false,
+      "quote_estimate": "WBNB_WITHDRAWAL_GROSS_ROUTER_FEES_AND_FINAL_RECIPIENT_UNRESOLVED",
+      "sold_fraction": 0.102983,
+      "native_transfers": [
+        {
+          "from": "0x1de460f363af910f51726def188f9004276bf4bc",
+          "to": "0x80a65fcaeabbb0aa4c9a85087f9e0f7ba26f293f",
+          "value_raw": "9739763047704733",
+          "direction": "IN"
+        }
+      ]
+    }
+  ]
+}

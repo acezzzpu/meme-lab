@@ -58,3 +58,4 @@ backups/
 .env.production
 
 !.env.production.example
+!.env.copy-paper.example

@@ -92,9 +92,9 @@ async function actionFixture(t,safety){
  e.safety={inspect:async()=>safety};e.routes=new RouteEngine({});e.routes.providers=[{id:'PANCAKE_V2',quote:async()=>quote('PANCAKE_V2')}];
  return {store,e,action:await store.get('SELECT * FROM copy_actions LIMIT 1')};
 }
-test('rejected token saves exact safety checks and received quotes, with zero fills',async t=>{
+test('PAPER keeps safety warnings without applying a LIVE safety veto to a virtual quote',async t=>{
  const {store,e,action}=await actionFixture(t,{status:'FAILED',checks:{proxy:'FAILED'},buy_tax:0,sell_tax:0});await e.processAction(action);
- const row=await store.get('SELECT * FROM copy_actions WHERE id=?',action.id),data=decode(row.data);assert.equal(row.state,'REJECTED');assert.equal(data.safety.checks.proxy,'FAILED');assert.equal(data.quote_attempts.length,1);assert.ok(data.route_errors.some(r=>r.error==='TOKEN_SAFETY_FAILED'));assert.equal((await store.get('SELECT COUNT(*) n FROM copy_ledger')).n,0);
+ const row=await store.get('SELECT * FROM copy_actions WHERE id=?',action.id),data=decode(row.data);assert.equal(row.state,'FILLED');assert.equal(data.safety.checks.proxy,'FAILED');assert.equal(data.quote_attempts.length,1);assert.equal(data.paper_model.not_an_onchain_fill,true);assert.equal((await store.get('SELECT COUNT(*) n FROM copy_ledger')).n,1);
 });
 test('compatible PAPER quote fills once through the actual route selector',async t=>{
  const {store,e,action}=await actionFixture(t,{status:'PASSED',checks:{},buy_tax:0,sell_tax:0});await e.processAction(action);assert.equal((await store.get('SELECT state FROM copy_actions WHERE id=?',action.id)).state,'FILLED');assert.equal((await store.get('SELECT COUNT(*) n FROM copy_ledger')).n,1);
@@ -109,9 +109,9 @@ test('queued trace requests respect an unsupported response; trace timeout is no
  const timeout=new BscRpc([provider],{fetcher:async()=>new Response(JSON.stringify({error:{code:-32002,message:'request timed out'}}))});timeout.verified.add(provider.id);await assert.rejects(timeout.call('debug_traceTransaction',['tx']),/timed out/);assert.equal(timeout.unsupported.size,0);assert.ok(timeout.cooldown.get(provider.id)>Date.now());
 });
 
-test('a fast quote above gas limits cannot cancel a slower affordable route',async t=>{
+test('a fast PAPER quote that exceeds virtual cash cannot cancel a slower affordable route',async t=>{
  const {store,e,action}=await actionFixture(t,{status:'PASSED',checks:{},buy_tax:0,sell_tax:0});e.routes.providers=[{id:'PANCAKE_SMART',quote:async()=>quote('PANCAKE_SMART',{fee_raw:'1000000000000000000'})},{id:'PANCAKE_V2',quote:async()=>{await delay(5);return quote('PANCAKE_V2');}}];await e.processAction(action);
- const row=await store.get('SELECT * FROM copy_actions WHERE id=?',action.id);assert.equal(row.state,'FILLED');const d=decode(row.data);assert.equal(d.quote.provider,'PANCAKE_V2');assert.ok(d.quote.route_errors.some(r=>r.error==='MAX_GAS_EXCEEDED'));
+ const row=await store.get('SELECT * FROM copy_actions WHERE id=?',action.id);assert.equal(row.state,'FILLED');const d=decode(row.data);assert.equal(d.quote.provider,'PANCAKE_V2');assert.ok(d.quote.route_errors.some(r=>r.error==='PAPER_BALANCE_INSUFFICIENT'));
 });
 
 test('first route cannot replace the router pinned in an approved intent',async t=>{

@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS copy_samples(id TEXT PRIMARY KEY,event_id TEXT,provid
 CREATE INDEX IF NOT EXISTS copy_samples_kind_time ON copy_samples(kind,at);
 CREATE TABLE IF NOT EXISTS copy_blocks(number INTEGER PRIMARY KEY,hash TEXT NOT NULL,parent_hash TEXT NOT NULL,at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS copy_jobs(id TEXT PRIMARY KEY,kind TEXT NOT NULL,state TEXT NOT NULL,payload TEXT NOT NULL,available_at INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,error TEXT);
+CREATE TABLE IF NOT EXISTS copy_source_transactions(chain_id INTEGER NOT NULL,hash TEXT NOT NULL,status TEXT NOT NULL,first_seen_at INTEGER NOT NULL,last_seen_at INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(chain_id,hash));
+CREATE TABLE IF NOT EXISTS copy_target_positions(target_id TEXT NOT NULL,token TEXT NOT NULL,quantity_raw TEXT,closed_at INTEGER,sequence INTEGER NOT NULL,updated_at INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(target_id,token));
+CREATE TABLE IF NOT EXISTS copy_intents(chain_id INTEGER NOT NULL,hash TEXT NOT NULL,target_id TEXT NOT NULL,status TEXT NOT NULL,data TEXT NOT NULL,created_at INTEGER NOT NULL,PRIMARY KEY(chain_id,hash,target_id));
 CREATE INDEX IF NOT EXISTS copy_jobs_ready ON copy_jobs(state,available_at);
 `;
 export const targetDefaults={mode:'PAPER',size_mode:'FIXED_BNB',fixed_bnb:'0.002',fixed_usd:2,capital_pct:2,proportional_pct:1,exit_mode:'MIRROR_EXIT_PCT',max_signal_age_ms:2000,max_price_gap_pct:5,max_position_bnb:'0.01',min_target_bnb:'0',min_liquidity_usd:15000,stop_loss_pct:15,take_profit_pct:30,max_hold_minutes:60,baseline:false};

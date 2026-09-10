@@ -49,7 +49,21 @@ export class BscRpc {
    this.metrics.push({provider:provider.id,method,at:Date.now(),duration_ms:performance.now()-started,status:cancelled?'CANCELLED':'ERROR',error});throw e;
   }finally{release();if(this.metrics.length>300)this.metrics.splice(0,this.metrics.length-300);}
  }
- async call(method,params=[],{timeout,provider}={}){if(provider)return this.request(provider,method,params,timeout);let error;for(const p of this.providers){this.context.getStore()?.signal?.throwIfAborted();try{return await this.request(p,method,params,timeout);}catch(e){error=e;if(method==='eth_sendRawTransaction')throw e;}}throw error??Error('BSC_PROVIDER_NOT_CONFIGURED');}
+ async call(method,params=[],{timeout,provider}={}){
+  if(provider)return this.request(provider,method,params,timeout);
+  const active=this.providers.filter(p=>!['archive','benchmark'].includes(p.role));
+  check(active.length,'BSC_PROVIDER_NOT_CONFIGURED');
+  // Never race broadcasts. Redundant read-only requests use independent budgets;
+  // a slow primary cannot hold the secondary behind its timeout/backoff.
+  if(method==='eth_sendRawTransaction'||active.length===1)return this.request(active[0],method,params,timeout);
+  const parent=this.context.getStore(),controllers=active.slice(0,2).map(()=>new AbortController());
+  try{return await Promise.any(active.slice(0,2).map((p,i)=>this.withContext({signal:parent?.signal?AbortSignal.any([parent.signal,controllers[i].signal]):controllers[i].signal},async()=>{
+   const result=await this.request(p,method,params,timeout);
+   if(result===null&&['eth_getTransactionByHash','eth_getTransactionReceipt','eth_getBlockByNumber'].includes(method))throw Error('RPC_RESULT_PENDING');
+   return result;
+  })));}catch(e){if(e.errors?.every(x=>x.message==='RPC_RESULT_PENDING'))return null;throw e.errors?.find(x=>x.message!=='RPC_RESULT_PENDING')??e;}
+  finally{controllers.forEach(c=>c.abort(Error('REDUNDANT_READ_COMPLETED')));}
+ }
  async verify(){const chain=await this.call('eth_chainId');check(Number(BigInt(chain))===BSC.chainId,'WRONG_CHAIN_ID');return Number(BigInt(await this.call('eth_blockNumber')));}
  async contract(to,abi,method,args=[],block='latest'){const out=await this.call('eth_call',[{to,data:abi.encodeFunctionData(method,args)},block]);return abi.decodeFunctionResult(method,out);}
  async benchmark(){const results=await Promise.allSettled(this.providers.map(async p=>{const start=performance.now();const chain=await this.request(p,'eth_chainId');check(Number(BigInt(chain))===56,'WRONG_CHAIN_ID');const block=await this.request(p,'eth_getBlockByNumber',['latest',false]);return {provider:p.id,chain_id:56,block:Number(BigInt(block.number)),block_at:Number(BigInt(block.timestamp))*1000,received_at:Date.now(),duration_ms:performance.now()-start,method:'HTTP chainId + latest block'};}));return results.map((r,i)=>r.status==='fulfilled'?r.value:{provider:this.providers[i].id,error:cleanError(r.reason)});}
