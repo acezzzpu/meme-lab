@@ -8,9 +8,9 @@ export class BscRpc {
  constructor(providers,{timeout=4000,fetcher=fetch,maxConcurrent=4}={}){this.providers=providers.filter(p=>p.enabled);this.timeout=timeout;this.fetcher=fetcher;this.maxConcurrent=Math.max(2,maxConcurrent);this.sequence=0;this.verified=new Set();this.verifying=new Map();this.cooldown=new Map();this.failures=new Map();this.unsupported=new Map();this.slots=new Map();this.context=new AsyncLocalStorage();this.metrics=[];}
  withContext(options,work){return this.context.run({...this.context.getStore(),...options},work);}
  acquire(id,priority,signal){
-  let state=this.slots.get(id);if(!state){state={active:0,background:0,queue:[]};this.slots.set(id,state);}
+  let state=this.slots.get(id);if(!state){const rps=this.providers.find(p=>p.id===id)?.requests_per_second;state={active:0,background:0,queue:[],interval:Number.isFinite(rps)&&rps>0?1000/rps:0,nextStart:0,timer:null};this.slots.set(id,state);}
   return new Promise((resolve,reject)=>{
-   const item={priority,resolve,reject,signal,abort:null};item.abort=()=>{state.queue=state.queue.filter(x=>x!==item);reject(signal.reason);};
+   const item={priority,resolve,reject,signal,abort:null};item.abort=()=>{state.queue=state.queue.filter(x=>x!==item);reject(signal.reason);if(!state.queue.length&&state.timer){clearTimeout(state.timer);state.timer=null;}};
    if(signal.aborted)return reject(signal.reason);if(state.queue.length>=64)return reject(Error('RPC_QUEUE_FULL'));
    signal.addEventListener('abort',item.abort,{once:true});state.queue.push(item);this.drain(state);
   });
@@ -18,7 +18,9 @@ export class BscRpc {
  drain(state){
   state.queue.sort((a,b)=>b.priority-a.priority);
   while(state.active<this.maxConcurrent){const i=state.queue.findIndex(x=>x.priority>=0||state.background<1&&state.active<this.maxConcurrent-1);if(i<0)break;
+   const wait=state.nextStart-performance.now();if(wait>0){if(!state.timer)state.timer=setTimeout(()=>{state.timer=null;this.drain(state);},Math.ceil(wait));return;}
    const x=state.queue.splice(i,1)[0];x.signal.removeEventListener('abort',x.abort);if(x.signal.aborted){x.reject(x.signal.reason);continue;}
+   state.nextStart=performance.now()+state.interval;
    state.active++;if(x.priority<0)state.background++;let done=false;
    x.resolve(()=>{if(done)return;done=true;state.active--;if(x.priority<0)state.background--;this.drain(state);});
   }
