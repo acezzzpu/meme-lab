@@ -1,13 +1,47 @@
 import WebSocket from 'ws';
 import {TRANSFER,packed,encode,cleanError} from '../../core/copy/common.mjs';
-// A provider supplies observations, never execution decisions. Pending is telemetry only.
+// Concurrent providers remain connected; each can supply heads and pending data.
 export class WalletActivityProvider {
  constructor(provider,rpc,targets,onObservation,onHealth){Object.assign(this,{provider,rpc,targets,onObservation,onHealth});this.stopped=true;this.seq=0;this.requests=new Map();this.subscriptions=new Map();this.reconnects=0;this.lastPoll=0;this.busy=false;this.lastEvent=0;this.nextConnect=0;this.verified=false;this.subscriptionErrors=new Map();this.lastHealthAt=0;}
  start(){this.stopped=false;if(this.provider.ws_url)this.connect();this.timer=setInterval(()=>this.tick().catch(e=>this.health('ERROR',{error:cleanError(e)})),250);}
- health(status,data={}){if(status==='CONNECTED'&&[...this.subscriptionErrors.keys()].some(k=>k!=='pending'))status='DEGRADED';if(this.subscriptionErrors.size)data={...data,subscription_errors:Object.fromEntries(this.subscriptionErrors)};this.onHealth(this.provider.id,status,{method:this.provider.ws_url?'WEBSOCKET':'HTTP_FALLBACK',reconnects:this.reconnects,last_event:this.lastEvent,...data});}
+ health(status,data={}){if(status==='CONNECTED'&&[...this.subscriptionErrors.keys()].some(k=>!k.startsWith('pending')))status='DEGRADED';if(this.subscriptionErrors.size)data={...data,subscription_errors:Object.fromEntries(this.subscriptionErrors)};this.onHealth(this.provider.id,status,{method:this.provider.ws_url?'WEBSOCKET':'HTTP_FALLBACK',reconnects:this.reconnects,last_event:this.lastEvent,http:this.httpHealth??{status:'UNTESTED'},ws:{status:this.verified&&this.socket?.readyState===1?'CONNECTED':'DISCONNECTED',last_head_at:this.lastHeadAt??null},head_seen_count:this.headSeen??0,pending_seen_count:this.pendingSeen??0,pending_hashes_skipped:this.pendingSkipped??0,...data});}
  async connect(){if(this.stopped||this.socket&&[0,1].includes(this.socket.readyState)||Date.now()<this.nextConnect)return;this.socket=new WebSocket(this.provider.ws_url,{handshakeTimeout:8000,maxPayload:8*1024*1024});this.verified=false;this.lastEvent=Date.now();this.socket.on('open',()=>{this.send('eth_chainId',[],'chain');});this.socket.on('message',data=>{try{this.message(JSON.parse(data.toString()));}catch(e){this.health('ERROR',{error:cleanError(e)});}});this.socket.on('error',()=>this.health('RECONNECTING',{error:'WSS_CONNECTION_FAILED'}));this.socket.on('close',()=>{this.requests.clear();this.subscriptions.clear();this.subscriptionErrors.clear();if(!this.stopped){this.reconnects++;this.nextConnect=Date.now()+Math.min(30000,500*2**Math.min(6,this.reconnects));this.health('RECONNECTING');}});}
  send(method,params,kind){const id=++this.seq;this.requests.set(id,kind);this.socket.send(encode({jsonrpc:'2.0',id,method,params}));}
- message(msg){const receivedAt=Date.now();this.lastEvent=receivedAt;if(msg.id){const kind=this.requests.get(msg.id);this.requests.delete(msg.id);if(msg.error){this.subscriptionErrors.set(kind,'SUBSCRIPTION_UNAVAILABLE');this.health(kind==='pending'?'CONNECTED':'DEGRADED',{error:kind+': SUBSCRIPTION_UNAVAILABLE'});return;}if(kind==='chain'){if(Number(BigInt(msg.result))!==56){this.health('ERROR',{error:'WRONG_WSS_CHAIN'});this.socket.close();return;}this.verified=true;this.send('eth_subscribe',['newHeads'],'head');const wallets=this.targets.map(t=>packed(t.address));if(wallets.length){this.send('eth_subscribe',['logs',{topics:[TRANSFER,wallets]}],'log');this.send('eth_subscribe',['logs',{topics:[TRANSFER,null,wallets]}],'log');}if(this.provider.pending==='ALCHEMY_FILTERED')this.send('eth_subscribe',['alchemy_pendingTransactions',{fromAddress:this.targets.map(t=>t.address),hashesOnly:false}],'pending');return;}this.subscriptionErrors.delete(kind);this.subscriptions.set(msg.result,kind);this.health('CONNECTED',{subscriptions:this.subscriptions.size});return;}if(msg.method!=='eth_subscription'||!this.verified)return;const kind=this.subscriptions.get(msg.params?.subscription),event=msg.params?.result;if(event&&Date.now()-this.lastHealthAt>1000){this.lastHealthAt=Date.now();this.health('CONNECTED',{block:event.number?Number(BigInt(event.number)):undefined,subscriptions:this.subscriptions.size});}if(event)this.onObservation({provider:this.provider.id,method:'WEBSOCKET',kind,event,received_at:receivedAt});}
- async tick(){if(this.stopped)return;if(this.provider.ws_url&&this.socket?.readyState===1&&this.verified&&[...this.subscriptions.values()].includes('head')){if(Date.now()-this.lastEvent>20000){this.health('STALE');this.socket.terminate();}return;}if(this.provider.ws_url)await this.connect();if(this.busy||Date.now()-this.lastPoll<1000)return;const backoff=this.rpc.cooldown?.get(this.provider.id)??0;if(backoff>Date.now()){if(Date.now()-this.lastHealthAt>1000){this.lastHealthAt=Date.now();this.health('BACKOFF',{retry_at:backoff,error:'RPC_BACKOFF'});}return;}this.lastPoll=Date.now();this.busy=true;try{if(!this.httpVerified){const chain=await this.rpc.request(this.provider,'eth_chainId');if(Number(BigInt(chain))!==56)throw Error('WRONG_HTTP_CHAIN');this.httpVerified=true;}const block=await this.rpc.request(this.provider,'eth_blockNumber');const now=Date.now();if(block!==this.lastBlock){this.lastBlock=block;this.lastEvent=now;this.onObservation({provider:this.provider.id,method:'HTTP_FALLBACK',kind:'head',event:{number:block},received_at:now});}this.health('RPC_ONLY',{block:Number(BigInt(block)),last_success_at:now});}finally{this.busy=false;}}
+ subscribePending(){
+  if(this.provider.pending==='ALCHEMY_FILTERED')this.send('eth_subscribe',['alchemy_pendingTransactions',{fromAddress:this.targets.map(t=>t.address),hashesOnly:false}],'pending');
+  if(this.provider.pending==='STANDARD_FULL')this.send('eth_subscribe',['newPendingTransactions',true],'pending-full');
+  if(this.provider.pending==='STANDARD_HASH')this.send('eth_subscribe',['newPendingTransactions'],'pending-hash');
+ }
+ async pending(event,receivedAt,receivedMono){
+  if(typeof event==='object'){
+   if(event.from&&this.targets.some(t=>t.address.toLowerCase()===event.from.toLowerCase()))this.onObservation({provider:this.provider.id,method:'WEBSOCKET',kind:'pending',event,received_at:receivedAt,received_mono:receivedMono});
+   return;
+  }
+  if(typeof event!=='string'||!/^0x[\da-fA-F]{64}$/.test(event))return;
+  // Hash-only feeds need HTTP lookups and cannot guarantee full visibility under
+  // load. Bound them independently so they cannot consume the head/read budget.
+  this.pendingActive??=0;this.pendingSkipped??=0;
+  if(this.pendingActive>=2){this.pendingSkipped++;return;}
+  this.pendingActive++;
+  try{const run=()=>this.rpc.call('eth_getTransactionByHash',[event],{timeout:800});const tx=await (this.rpc.withContext?this.rpc.withContext({priority:-1},run):run());if(tx)await this.pending(tx,receivedAt,receivedMono);}catch{/* Confirmed block scan remains canonical. */}finally{this.pendingActive--;}
+ }
+ message(msg){const receivedAt=Date.now(),receivedMono=performance.now();this.lastEvent=receivedAt;if(msg.id){const kind=this.requests.get(msg.id);this.requests.delete(msg.id);if(msg.error){if(kind==='pending-full'){this.send('eth_subscribe',['newPendingTransactions'],'pending-hash');return;}this.subscriptionErrors.set(kind,'SUBSCRIPTION_UNAVAILABLE');this.health(kind==='pending'?'CONNECTED':'DEGRADED',{error:kind+': SUBSCRIPTION_UNAVAILABLE'});return;}if(kind==='chain'){if(Number(BigInt(msg.result))!==56){this.health('ERROR',{error:'WRONG_WSS_CHAIN'});this.socket.close();return;}this.verified=true;this.send('eth_subscribe',['newHeads'],'head');const wallets=this.targets.map(t=>packed(t.address));if(wallets.length){this.send('eth_subscribe',['logs',{topics:[TRANSFER,wallets]}],'log');this.send('eth_subscribe',['logs',{topics:[TRANSFER,null,wallets]}],'log');}this.subscribePending();return;}this.subscriptionErrors.delete(kind);this.subscriptions.set(msg.result,kind);this.health('CONNECTED',{subscriptions:this.subscriptions.size});return;}if(msg.method!=='eth_subscription'||!this.verified)return;const kind=this.subscriptions.get(msg.params?.subscription),event=msg.params?.result;if(event&&kind==='head'){this.headSeen=(this.headSeen??0)+1;this.lastHeadAt=receivedAt;};if(event&&kind?.startsWith('pending'))this.pendingSeen=(this.pendingSeen??0)+1;if(event&&Date.now()-this.lastHealthAt>1000){this.lastHealthAt=Date.now();this.health('CONNECTED',{block:event.number?Number(BigInt(event.number)):undefined,subscriptions:this.subscriptions.size});}if(kind?.startsWith('pending')){this.pending(event,receivedAt,receivedMono).catch(()=>{});return;}if(event)this.onObservation({provider:this.provider.id,method:'WEBSOCKET',kind,event,received_at:receivedAt,received_mono:receivedMono});}
+ async tick(){
+  if(this.stopped)return;
+  let wsHealthy=this.provider.ws_url&&this.socket?.readyState===1&&this.verified&&[...this.subscriptions.values()].includes('head');
+  if(wsHealthy&&Date.now()-(this.lastHeadAt??this.lastEvent)>20000){this.health('STALE');this.socket.terminate();wsHealthy=false;}
+  if(this.provider.ws_url&&!wsHealthy)await this.connect();
+  if(this.busy||Date.now()-this.lastPoll<(wsHealthy?5000:1000))return;
+  this.lastPoll=Date.now();this.busy=true;const start=performance.now();
+  try{
+   if(!this.httpVerified){const chain=await this.rpc.request(this.provider,'eth_chainId');if(Number(BigInt(chain))!==56)throw Error('WRONG_HTTP_CHAIN');this.httpVerified=true;}
+   const block=await this.rpc.request(this.provider,'eth_blockNumber'),now=Date.now();
+   this.httpHealth={status:'CONNECTED',last_success_at:now,latency_ms:performance.now()-start,block:Number(BigInt(block))};
+   if(block!==this.lastBlock){this.lastBlock=block;this.onObservation({provider:this.provider.id,method:'HTTP_FALLBACK',kind:'head',event:{number:block},received_at:now,received_mono:performance.now()});}
+   this.health(wsHealthy?'CONNECTED':'RPC_ONLY',{block:Number(BigInt(block))});
+  }catch(error){this.httpHealth={status:'ERROR',at:Date.now(),error:cleanError(error),retry_at:this.rpc.cooldown?.get(this.provider.id)??null};this.health(wsHealthy?'CONNECTED':'RECONNECTING');}
+  finally{this.busy=false;}
+ }
+
  stop(){this.stopped=true;clearInterval(this.timer);this.socket?.close();}
 }
