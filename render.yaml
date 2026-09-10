@@ -10,7 +10,6 @@ services:
     buildCommand: npm ci --ignore-scripts --include=dev && npm test && npm run build:standalone
     startCommand: node runtime/server.mjs
     healthCheckPath: /healthz
-    maxShutdownDelaySeconds: 30
     disk:
       name: meme-lab-data
       mountPath: /opt/render/project/src/.runtime
