@@ -2,6 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BscRpc} from '../runtime/copy/rpc.mjs';
 import {copyEnvironment,historyReadProviders} from '../runtime/copy/provider-config.mjs';
+import {WalletActivityProvider} from '../runtime/copy/activity-provider.mjs';
+
+test('a quota rejection during WS chain verification closes the unusable socket for retry',()=>{
+ let closed=false;const health=[];
+ const p=new WalletActivityProvider({id:'p',ws_url:'wss://unit.invalid'}, {}, [],()=>{},(_id,status,data)=>health.push({status,data}));
+ p.socket={readyState:1,close:()=>{closed=true;}};p.requests.set(1,'chain');
+ p.message({id:1,error:{code:-32003,message:'daily request limit reached'}});
+ assert.equal(closed,true);assert.equal(p.verified,false);assert.equal(p.subscriptions.size,0);
+ assert.equal(health[0].status,'ERROR');assert.match(health[0].data.error,/daily request limit reached/);
+});
 
 test('queued recovery reads are paced and urgent reads take the next available start',async()=>{
  const p={id:'p',enabled:true,http_url:'https://unit.invalid',requests_per_second:20};
