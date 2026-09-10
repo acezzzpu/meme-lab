@@ -59,9 +59,20 @@ export async function enqueue(store,key,type,payload={},delay=0,repeat=false){
 }
 export async function claimJob(store,owner,types=null){
  const now=Date.now();const filter=types?.length?' AND type IN ('+types.map(()=>'?').join(',')+')':'';
- const row=await store.get("SELECT id FROM engine_jobs WHERE state='QUEUED' AND available_at<=?"+filter+" ORDER BY CASE type WHEN 'RECONCILE' THEN 0 WHEN 'PAPER_EXITS' THEN 1 WHEN 'SCAN' THEN 2 WHEN 'TRAINING_MARKET' THEN 3 WHEN 'WALLET_TX' THEN 4 ELSE 5 END,available_at LIMIT 1",now,...(types??[]));if(!row)return null;
+ // Prices have a finite observation window. Polling, provider checks and fitting
+ // must also run while the historical transaction queue is continuously nonempty.
+ const row=await store.get("SELECT id FROM engine_jobs WHERE state='QUEUED' AND available_at<=?"+filter+" ORDER BY CASE type WHEN 'RECONCILE' THEN 0 WHEN 'PAPER_EXITS' THEN 1 WHEN 'TRAINING_MARKET' THEN 2 WHEN 'SCAN' THEN 3 WHEN 'WALLET_POLL' THEN 4 WHEN 'HEALTH' THEN 5 WHEN 'LEARNING' THEN 5 WHEN 'TRAINING' THEN 5 WHEN 'WALLET_TX' THEN 6 ELSE 7 END,available_at,id LIMIT 1",now,...(types??[]));if(!row)return null;
  const r=await store.run("UPDATE engine_jobs SET state='RUNNING',owner=?,locked_at=?,updated_at=?,attempts=attempts+1 WHERE id=? AND state='QUEUED'",owner,now,now,row.id);if(!r.changes)return null;
  const job=await store.get('SELECT * FROM engine_jobs WHERE id=?',row.id);return {...job,payload:json(job.payload,{})};
+}
+export async function claimScheduledJob(store,owner,activeTypes,concurrency){
+ // In observation-only mode the idle execution slot can capture training prices.
+ // PAPER/LIVE keep the original execution reservation; a training task does not
+ // count as an active exit/reconciliation task that would release that reservation.
+ const critical=['PAPER_EXITS','RECONCILE'];
+ const reserve=concurrency>1&&activeTypes.length>=concurrency-1&&!activeTypes.some(type=>critical.includes(type));
+ const observing=reserve&&await store.setting('mode')==='OBSERVE'&&!await store.setting('trading_enabled');
+ return claimJob(store,owner,reserve?(observing?[...critical,'TRAINING_MARKET']:critical):null);
 }
 export async function engineSummary(store,available){
  const heartbeat=await store.setting('engine_heartbeat'),desired=await store.setting('engine_desired')??'STOPPED';
