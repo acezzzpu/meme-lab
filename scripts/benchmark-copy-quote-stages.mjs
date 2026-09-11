@@ -5,6 +5,7 @@ import {sqliteDriver} from '../runtime/sqlite.mjs';
 import {Store} from '../core/store.mjs';
 import {freeBscProviders} from '../runtime/copy/provider-config.mjs';
 import {QuoteTrace} from '../runtime/copy/quote-profile.mjs';
+import {restoreRouteMetadata} from '../runtime/copy/route-metadata.mjs';
 const BASE='4285248983af442dee974582b304a32e7888eeab',names=['rpc','routes','paper-dex-route','smart-routes','quote-selection','flap'];
 const id=process.argv[2],hash=process.argv[3];if(!['PANCAKE_V2','PANCAKE_SMART','PAPER_DEX_PATH','FLAP_PORTAL'].includes(id)||!/^0x[0-9a-f]{64}$/.test(hash??''))throw Error('PROVIDER_AND_EXISTING_HASH_REQUIRED');
 // A read-only source snapshot in separate diagnostic files. Never checkout,
@@ -15,7 +16,8 @@ const db=sqliteDriver(resolve(process.env.DATA_DIR??'data','meme-lab.sqlite')),s
 const results=[],providers=freeBscProviders();let totalReads=0;
 for(const version of ['BEFORE','AFTER']){
  const prefix=version==='BEFORE'?'diagnostic-before-':'';const {BscRpc}=await import(pathToFileURL(resolve('runtime/copy/'+prefix+'rpc.mjs'))),{RouteEngine}=await import(pathToFileURL(resolve('runtime/copy/'+prefix+'routes.mjs'))),rpc=new BscRpc(providers),engine=new RouteEngine(rpc),adapter=engine.providers.find(p=>p.id===id);
- for(const cache of ['COLD','WARM']){
+ if(version==='AFTER')await restoreRouteMetadata(rpc,store);
+ for(const cache of [version==='AFTER'?'RESTORED_AUTHENTICATED_METADATA':'COLD','WARM']){
   const trace=new QuoteTrace(id),start=performance.now();let result;
   try{const quote=await rpc.withContext({quoteTrace:trace,priority:-1,pipeline:'BOUNDED_QUOTE_STAGE_EXPERIMENT',beforeRequest:()=>{if(++totalReads>80)throw Error('DIAGNOSTIC_TOTAL_READ_CAP');}},()=>adapter.quote({paper:true,side:a.quote.side,token:a.quote.token,amount:a.quote.amount_raw,slippageBps:c.max_slippage_bps,taker:'0x00000000000000000000000000000000b0bc0f56',hints:a.event?.pools??[],candidatePools:a.event?.candidate_pools??a.quote.candidate_pools??[]}));result={status:'QUOTED',quote};}catch(error){result={status:'FAILED',error:error.message};}
   trace.finished=performance.now();results.push({version,cache,wall_ms:performance.now()-start,profile:trace.snapshot(),...result});

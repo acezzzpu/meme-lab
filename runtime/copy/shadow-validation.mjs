@@ -1,7 +1,7 @@
 import {BSC,FACTORY,ERC20,hex,addr,check,cleanError} from '../../core/copy/common.mjs';
 import {saveProfile} from '../../core/copy/latency-profile.mjs';
 import {classifySimulationFailure} from '../../core/copy/simulation-failure.mjs';
-import {buildShadowUnsigned,SHADOW_WALLET,shadowRead} from './shadow-compare.mjs';
+import {buildShadowUnsigned,SHADOW_WALLET,shadowRead,refreshShadowPortal} from './shadow-compare.mjs';
 import {validateSeededSell} from './shadow-sell-validation.mjs';
 const strip=({chainId,...tx})=>tx;
 const balance=token=>({from:SHADOW_WALLET,to:token,data:ERC20.encodeFunctionData('balanceOf',[SHADOW_WALLET])});
@@ -23,7 +23,7 @@ export async function atomicShadowTemplate(e,q,c){
 export async function validateNetBuy(e,event,template,c){
  const start=performance.now(),ev={version:2,at:Date.now(),side:'BUY',token:event.token,target_hash:event.hash,status:'PREPARING',simulation:{status:'NOT_ATTEMPTED'},signed:false,broadcast:false,private_key_used:false,paper_quote:template};let router=null;
  try{
-  const source=await atomicShadowTemplate(e,template,c),parent=(await shadowRead(e,'eth_blockNumber',[])).result;
+  let source=await atomicShadowTemplate(e,template,c);const parent=(await shadowRead(e,'eth_blockNumber',[])).result;source=await refreshShadowPortal(e,source,parent);
   // Minimum one is a read-only quote probe, never final execution calldata.
   const probe=buildShadowUnsigned({...source,amount_raw:template.amount_raw,out_raw:'1',min_out_raw:'1',quoted_at:Date.now()},c),tx=strip(probe.unsigned_transaction),bal=balance(event.token),overrides={[SHADOW_WALLET]:{balance:hex(10n**19n)}};router=tx.to;
   const payload=calls=>[{blockStateCalls:[{stateOverrides:overrides,calls}],validation:false,traceTransfers:true},parent];

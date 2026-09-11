@@ -1,6 +1,6 @@
 import {BSC,ERC20,hex,check,transferDeltas} from '../../core/copy/common.mjs';
 import {classifySimulationFailure} from '../../core/copy/simulation-failure.mjs';
-import {buildShadowUnsigned,shadowRead,SHADOW_WALLET} from './shadow-compare.mjs';
+import {buildShadowUnsigned,shadowRead,SHADOW_WALLET,refreshShadowPortal} from './shadow-compare.mjs';
 const strip=({chainId,...tx})=>tx;
 const balanceCall=token=>({from:SHADOW_WALLET,to:token,data:ERC20.encodeFunctionData('balanceOf',[SHADOW_WALLET])});
 const readBalance=c=>c?.status==='0x1'&&/^0x[0-9a-f]+$/i.test(c.returnData)?BigInt(c.returnData):null;
@@ -17,10 +17,11 @@ export async function validateSeededSell(e,event,template,c,{seedBnbRaw='2000000
   check(event.side==='SELL','TARGET_SELL_REQUIRED');check(template.side==='SELL','SELL_QUOTE_REQUIRED');
   const sold=BigInt(event.quantity_raw),before=BigInt(event.target_balance_before);mirrorRawAmount(1n,sold,before);
   evidence.target_exit_fraction={numerator:String(sold),denominator:String(before),classification:'DERIVED_FROM_RAW_AMOUNTS'};
-  const seed={...reverseQuote(template),amount_raw:String(seedBnbRaw),out_raw:'1',min_out_raw:'1',quoted_at:Date.now(),slippage_bps:c.max_slippage_bps};
+  let seed={...reverseQuote(template),amount_raw:String(seedBnbRaw),out_raw:'1',min_out_raw:'1',quoted_at:Date.now(),slippage_bps:c.max_slippage_bps};
   // Fail unsupported atomic routes before spending any diagnostic RPC quota.
-  const seedProbe=buildShadowUnsigned(seed,c);
+  let seedProbe=buildShadowUnsigned(seed,c);
   const parent=(await shadowRead(e,'eth_blockNumber',[])).result,gasPrice=BigInt((await shadowRead(e,'eth_gasPrice',[])).result);
+  seed=await refreshShadowPortal(e,seed,parent);seedProbe=buildShadowUnsigned(seed,c);template={...template,portal_state:seed.portal_state,portal_state_block:seed.portal_state_block,shadow_only_migrated_portal:seed.shadow_only_migrated_portal,portal_route_note:seed.portal_route_note};
   evidence.parent_block=parent;evidence.seed_probe={minimum_one:true,diagnostic_only:true,not_broadcastable_approval:true};
   const balance=balanceCall(event.token),seedResult=await simulate(e,[balance,strip(seedProbe.unsigned_transaction),balance],parent),seedCalls=requireCalls(seedResult,3,'SEED_BUY');
   const initial=readBalance(seedCalls[0]),acquired=readBalance(seedCalls[2]);check(initial===0n&&acquired>0n,'SIMULATION_ENVIRONMENT_SEED_INVENTORY_INVALID');
