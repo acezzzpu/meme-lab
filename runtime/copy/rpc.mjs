@@ -34,9 +34,9 @@ export class BscRpc {
   this.cooldown.set(provider.id,Date.now()+Math.max(retryAfter,Math.ceil(base*(1+Math.random()*.2))));
  }
  async cached(key,ttl,work){
-  const cached=this.cache.get(key);if(cached&&cached.until>Date.now()){this.telemetry.cache(true);return cached.value;}
+  const cached=this.cache.get(key);if(cached&&cached.until>Date.now()){if(this.context.getStore()?.quoteTrace)this.context.getStore().quoteTrace.cache.hits++;this.telemetry.cache(true);return cached.value;}
   if(this.cacheFlights.has(key)){this.telemetry.cache(true);const signal=this.context.getStore()?.signal;return signal?abortable(this.cacheFlights.get(key),signal):this.cacheFlights.get(key);}
-  this.telemetry.cache(false);const signal=this.context.getStore()?.signal;
+  if(this.context.getStore()?.quoteTrace)this.context.getStore().quoteTrace.cache.misses++;this.telemetry.cache(false);const signal=this.context.getStore()?.signal;
   // Immutable/short-lived reads are shared. One quote losing its race must not
   // cancel the metadata read needed by the winning quote. The RPC still times out.
   const task=this.withContext({signal:undefined},work).then(value=>{if(value!==null)this.cache.set(key,{value,until:Date.now()+ttl});if(this.cache.size>2000)this.cache.delete(this.cache.keys().next().value);return value;}).finally(()=>this.cacheFlights.delete(key));
@@ -69,7 +69,7 @@ export class BscRpc {
    check(r.ok,'RPC_HTTP_'+r.status+': '+String(data.error?.message??'').slice(0,160));
    if(data.error&&(data.error.code===-32601||/not (available|supported)|method not found|method.*disabled/i.test(data.error.message??'')))this.unsupported.set(provider.id+':'+method,Date.now()+600000);
    if(data.error&&method==='debug_traceTransaction'&&(data.error.code===-32601||/not (available|supported)|method not found/i.test(data.error.message??'')))this.unsupported.set(provider.id+':'+method,Date.now()+600000);
-   check(!data.error,'RPC_'+data.error?.code+': '+String(data.error?.message??'').slice(0,140));check(Object.hasOwn(data,'result'),'RPC_MALFORMED');
+   if(data.error){const error=Error('RPC_'+data.error.code+': '+String(data.error.message??'').slice(0,140));error.rpc_error={code:data.error.code,message:data.error.message,data:data.error.data};error.data=data.error.data;error.provider=provider.id;error.method=method;throw error;}check(Object.hasOwn(data,'result'),'RPC_MALFORMED');
    if(method==='eth_chainId'){check(Number(BigInt(data.result))===56,'WRONG_CHAIN_ID');this.verified.add(provider.id);}
    this.failures.set(provider.id,0);this.metrics.push({provider:provider.id,method,at:Date.now(),duration_ms:performance.now()-started,status:'OK'});return data.result;
   }catch(e){
@@ -77,7 +77,7 @@ export class BscRpc {
    if(!cancelled)this.degrade(provider,error,retryAfter);
    if(sent)this.telemetry.outcome(provider.id,method,{pipeline,error,cancelled,status:httpStatus});
    this.metrics.push({provider:provider.id,method,at:Date.now(),duration_ms:performance.now()-started,status:cancelled?'CANCELLED':'ERROR',error});throw e;
-  }finally{if(sent)this.telemetry.timing(provider.id,method,{pipeline,duration_ms:performance.now()-wireStarted,queue_ms:wireStarted-started,status:outcomeStatus,error:outcomeError});release();if(this.metrics.length>300)this.metrics.splice(0,this.metrics.length-300);}
+  }finally{if(sent&&context.quoteTrace)context.quoteTrace.rpc({provider:provider.id,method,contract_method:context.contractMethod??null,to:context.contractAddress??null,start_ms:started-context.quoteTrace.started,wire_ms:performance.now()-wireStarted,queue_ms:wireStarted-started,status:outcomeStatus,error:outcomeError});if(sent)this.telemetry.timing(provider.id,method,{pipeline,duration_ms:performance.now()-wireStarted,queue_ms:wireStarted-started,status:outcomeStatus,error:outcomeError});release();if(this.metrics.length>300)this.metrics.splice(0,this.metrics.length-300);}
  }
  async call(method,params=[],{timeout,provider}={}){
   if(provider)return this.request(provider,method,params,timeout);
@@ -102,7 +102,7 @@ export class BscRpc {
   });
  }
  async verify(){const chain=await this.call('eth_chainId');check(Number(BigInt(chain))===BSC.chainId,'WRONG_CHAIN_ID');return Number(BigInt(await this.call('eth_blockNumber')));}
- async contract(to,abi,method,args=[],block='latest'){const data=abi.encodeFunctionData(method,args),read=()=>this.call('eth_call',[{to,data},block]);const immutable=['decimals','symbol','token0','token1','factory','fee','WETH'].includes(method),pool=['getPair','getPool'].includes(method);const out=immutable||pool?await this.cached(to.toLowerCase()+':'+data,immutable?3600000:60000,read):await read();return abi.decodeFunctionResult(method,out);}
+ async contract(to,abi,method,args=[],block='latest'){const trace=this.context.getStore()?.quoteTrace,started=performance.now();try{const data=abi.encodeFunctionData(method,args),read=()=>this.withContext({contractMethod:method,contractAddress:to},()=>this.call('eth_call',[{to,data},block]));const immutable=['decimals','symbol','token0','token1','factory','fee','WETH'].includes(method),pool=['getPair','getPool'].includes(method);const out=immutable||pool?await this.cached(to.toLowerCase()+':'+data,immutable?3600000:60000,read):await read();return abi.decodeFunctionResult(method,out);}finally{trace?.contract(method,started,performance.now());}}
  async benchmark(){const results=await Promise.allSettled(this.providers.map(async p=>{const start=performance.now();const chain=await this.request(p,'eth_chainId');check(Number(BigInt(chain))===56,'WRONG_CHAIN_ID');const block=await this.request(p,'eth_getBlockByNumber',['latest',false]);return {provider:p.id,chain_id:56,block:Number(BigInt(block.number)),block_at:Number(BigInt(block.timestamp))*1000,received_at:Date.now(),duration_ms:performance.now()-start,method:'HTTP chainId + latest block'};}));return results.map((r,i)=>r.status==='fulfilled'?r.value:{provider:this.providers[i].id,error:cleanError(r.reason)});}
 }
 export async function tokenMetadata(rpc,token){const {ERC20}=await import('../../core/copy/common.mjs');const [[d],s]=await Promise.all([rpc.contract(token,ERC20,'decimals'),rpc.contract(token,ERC20,'symbol').catch(()=>[null])]);check(Number(d)<=36,'UNSUPPORTED_DECIMALS');return {decimals:Number(d),symbol:s[0]??token.slice(0,8)};}
