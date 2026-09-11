@@ -51,7 +51,7 @@ export async function shadowRead(e,method,params){
 export async function compareShadow(e,action,event,q,c){
  const started=performance.now();let evidence={status:'BUILDING',side:action.side,token:event.token,target_hash:event.hash,paper_action_id:action.id,quote:q,classification:'ESTIMATED',unsigned_tx_built:false,simulation:{status:'NOT_ATTEMPTED'},private_key_used:false,signed:false,broadcast:false,position_source:'EXACT_PAPER_INPUT_AMOUNT; NO_SHADOW_FILL_ASSUMED',target_exit_fraction:event.sold_fraction??null},buildMs=null,simulationMs=null;
  try{
-  const buildStart=performance.now(),build=buildShadowUnsigned(q,c);buildMs=performance.now()-buildStart;evidence={...evidence,...build,unsigned_tx_built:true,status:'BUILT'};
+  const buildStart=performance.now();let build;try{build=buildShadowUnsigned(q,c);}finally{buildMs=performance.now()-buildStart;}evidence={...evidence,...build,unsigned_tx_built:true,status:'BUILT'};
   await saveProfile(e.store,action.event_id,{shadow:evidence,wall:{shadow_build_at:Date.now()},stages:{SHADOW_BUILD:buildMs}});
   check(Date.now()-q.quoted_at<=c.max_quote_age_ms,'SHADOW_QUOTE_EXPIRED_BEFORE_SIMULATION');
   // Native balance override is explicit, ephemeral simulation state. Token
@@ -72,7 +72,7 @@ export async function compareShadow(e,action,event,q,c){
   evidence.status=ok?'SIMULATED':'SIMULATION_FAILED';
  }catch(error){evidence.status=evidence.unsigned_tx_built?'SIMULATION_BLOCKED':'BUILD_FAILED';evidence.error=cleanError(error);}
  const origin=e.eventClocks?.get(event.hash);
- await saveProfile(e.store,action.event_id,{shadow:evidence,wall:{shadow_finished_at:Date.now()},stages:{SHADOW_BUILD:buildMs,SIMULATION:simulationMs,TOTAL_SHADOW_REACTION:origin?.boot===e.boot&&Number.isFinite(origin.mono)?performance.now()-origin.mono:null,SHADOW_PROCESS:performance.now()-started}});
+ await saveProfile(e.store,action.event_id,{shadow:evidence,wall:{shadow_finished_at:Date.now()},stages:{SHADOW_BUILD:buildMs,SIMULATION:simulationMs,TOTAL_SHADOW_REACTION:origin?.boot===e.boot&&Number.isFinite(origin?.mono)?performance.now()-origin.mono:null,SHADOW_PROCESS:performance.now()-started}});
  return evidence;
 }
 export function scheduleShadow(e,action,event,q,c){
