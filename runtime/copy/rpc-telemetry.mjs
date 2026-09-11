@@ -10,7 +10,7 @@ export class RpcTelemetry {
   const day=new Date(at).toISOString().slice(0,10);let d=this.daily[provider];if(d?.day!==day)d=this.daily[provider]={day,requests:0,notifications:0,estimated_units:0};d[kind]++;d.estimated_units+=units;
   if(this.seconds.size>3601)for(const s of this.seconds.keys()){if(s<second-3600)this.seconds.delete(s);else break;}
  }
- outcome(provider,method,{pipeline='LIVE_TARGET_PIPELINE',transport='HTTP',error='',cancelled=false,status=0}={}){if(!error)return;const g=this.group(provider,method,pipeline,transport);if(cancelled){g.cancelled++;return;}g.errors++;if(status===429||/429|quota|daily.*limit|rate.?limit|request limit/i.test(error))g.rate_limits++;if(/timeout|timed out|TimeoutError/i.test(error))g.timeouts++;}
+ outcome(provider,method,{pipeline='LIVE_TARGET_PIPELINE',transport='HTTP',error='',cancelled=false,status=0}={}){if(!error)return;const g=this.group(provider,method,pipeline,transport);if(cancelled){g.cancelled++;return;}g.errors++;if(status===429||/429|quota|daily.*limit|rate.?limit|request limit|maximum API usage|ran out of cu/i.test(error))g.rate_limits++;if(/timeout|timed out|TimeoutError/i.test(error))g.timeouts++;}
  cache(hit){hit?this.cacheHits++:this.cacheMisses++;}
  suppress(reason){this.suppressed[reason]=(this.suppressed[reason]??0)+1;}
  snapshot(providers=[]){

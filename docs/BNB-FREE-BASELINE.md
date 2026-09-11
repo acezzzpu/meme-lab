@@ -1,7 +1,7 @@
 # BNB PAPER: free baseline and request budget
 
 Set `BSC_FREE_BASELINE=1` in Render Environment. This selects PublicNode HTTP/WSS,
-dRPC public HTTP/WSS and official BNB HTTP fallback; saved QuickNode credentials
+NodeReal public HTTP/WSS, official BNB HTTP and dRPC HTTP fallback; saved QuickNode credentials
 are not used. It starts no signer and requires PAPER targets. No subscription,
 private key, funded wallet, or transaction send is needed.
 
@@ -35,6 +35,9 @@ delivery does not avoid these credits.
   Failure starts a fallback immediately; slow reads use a bounded hedge. Every
   endpoint is attempted at most once per call. Daily-quota failures open a circuit
   for at least one hour; transient failures use exponential backoff and jitter.
+* Indexed job kind/readiness and block height lookups avoid full-table scans of
+  retained jobs. On Render, the measured recovery lookup fell from 18.52 ms over
+  37,937 jobs to 0.098 ms. A 40,000-job regression protects indexed access.
 * Two current-block read workers keep up with BSC blocks while preserving atomic
   durable capture, deduplication and reorg fences. Current-window gaps are recovered
   in height order; old pre-session gaps are retained without automatic scanning.
@@ -71,6 +74,8 @@ document 10,000 requests per five minutes and disable `eth_getLogs`; filtered
 single-block transfer logs therefore require a supporting fallback. Public endpoints
 have no availability guarantee. dRPC public rate limits observed during validation
 must stay visible rather than being called a healthy backup.
+
+NodeReal publishes a [public/shareable BSC key](https://docs.nodereal.io/reference/getting-started-with-your-api); it is not a private user credential. The preset limits its HTTP requests to 1/second and subscribes only to new heads. A Render probe received 144 heads in 65 seconds without an error. Its documented public HTTP limit is 2,000 CU/minute/IP; [WS accounting is bandwidth-based](https://docs.nodereal.io/docs/compute-units-cus) at 0.04 CU/byte. Telemetry retains notification bytes and estimated CU use; these estimates do not establish the provider's actual billing or an availability guarantee. dRPC public returned HTTP 429 from Render, so it remains a cooled-down HTTP fallback instead of the required secondary WebSocket.
 
 ## Evidence and acceptance
 
