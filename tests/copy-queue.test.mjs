@@ -15,8 +15,8 @@ const hash=h(123456);
 async function fixture(t){
  const db=sqliteDriver(':memory:'),store=new Store(db,{encryptionKey:Buffer.alloc(32,12).toString('base64')});
  await store.init();t.after(()=>db.close());
- await store.set('copy_config',{...await store.setting('copy_config'),enabled:true});await store.set('engine_desired','RUNNING');const e=new CopyEngine(store);e.targets=await store.all('SELECT * FROM copy_targets');
- const calls=[];e.rpc={metrics:[],call:async(method,[tag])=>{
+ await store.set('copy_config',{...await store.setting('copy_config'),enabled:true});await store.set('engine_desired','RUNNING');const e=new CopyEngine(store,{enableHistoryWorker:true});e.targets=await store.all('SELECT * FROM copy_targets');
+ const calls=[];e.rpc={providers:[{history_dedicated:true}],metrics:[],call:async(method,[tag])=>{
   assert.equal(method,'eth_getBlockByNumber');const n=Number(BigInt(tag));calls.push(n);
   return {number:tag,hash:h(n),parentHash:h(n-1),timestamp:'0x1',transactions:[]};
  }};
@@ -112,7 +112,7 @@ test('heartbeat/export distinguish current reading from historical coverage with
  await e.block({height:557,method:'HTTP_FALLBACK'});await e.health('public','RPC_ONLY',{block:557});e.rpc.metrics=[{provider:'public',method:'eth_getBlockByNumber',duration_ms:200,status:'OK'}];
  await e.report('ERROR','BLOCK · timeout',{provider:'public',height:101});await store.set('copy_providers',[{id:'private',enabled:true,http_url:'https://example.com/private-token?api-key=secret-test-value',ws_url:'wss://example.com/private-token',pending:'NONE'}]);await writeHeartbeat(e);
  const out=await handleCopy(store,'copy/export','GET',{},{});
- assert.equal(out.state.runtime.status,'RECOVERING');assert.equal(out.state.runtime.observed_head,557);assert.equal(out.state.runtime.latest_scanned_block,557);assert.equal(out.state.runtime.cursor,100);assert.equal(out.state.runtime.block_lag,457);assert.equal(out.state.runtime.missing_blocks,456);assert.ok(out.jobs.length>0);assert.equal(out.feed[0].message,'BLOCK · timeout');assert.equal(out.state.runtime.last_rpc[0].duration_ms,200);assert.equal(JSON.stringify(out).includes('secret-test-value'),false);assert.equal(JSON.stringify(out).includes('private-token'),false);
+ assert.equal(out.state.runtime.status,'RECOVERING');assert.equal(out.state.runtime.observed_head,557);assert.equal(out.state.runtime.latest_scanned_block,557);assert.equal(out.state.runtime.cursor,100);assert.equal(out.state.runtime.block_lag,457);assert.equal(out.state.runtime.missing_blocks,456);assert.equal(out.jobs.length,0,'No automatic historical scanning before a live window');assert.equal(out.feed[0].message,'BLOCK · timeout');assert.equal(out.state.runtime.last_rpc[0].duration_ms,200);assert.equal(JSON.stringify(out).includes('secret-test-value'),false);assert.equal(JSON.stringify(out).includes('private-token'),false);
 });
 test('STOP prevents both read lanes from claiming work; diagnostics do not run queued blocks',async t=>{
  const {e,store,calls}=await fixture(t);await e.job('head:100','BLOCK',{height:100});await e.job('head:99','BLOCK',{height:99,history:true});

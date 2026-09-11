@@ -39,10 +39,10 @@ test('aborting a paced queued read never sends it or blocks a later read',async(
 test('environment defaults reserve separate live and history request budgets',()=>{
  const env={BSC_PRIMARY_HTTP:'https://bsc-rpc.publicnode.com'};
  const live=copyEnvironment(env).providers,history=historyReadProviders(live);
- assert.equal(live[0].requests_per_second,8);assert.equal(history[0].requests_per_second,2);
+ assert.equal(live[0].requests_per_second,8);assert.deepEqual(history,[]);
  assert.equal(live[0].requests_per_second,8,'History must not mutate the live provider');
  assert.equal(copyEnvironment({...env,BSC_PRIMARY_RPS:'35'}).providers[0].requests_per_second,35);
  assert.throws(()=>copyEnvironment({...env,BSC_PRIMARY_RPS:'0'}),/RPS_INVALID/);
- const dedicated=historyReadProviders([...live,{id:'archive',role:'archive',enabled:true,requests_per_second:8}]);
+ const dedicated=historyReadProviders([...live,{id:'archive',role:'archive',enabled:true,requests_per_second:8,history_dedicated:true,http_url:'https://separate.invalid'}]);
  assert.deepEqual(dedicated.map(p=>p.id),['archive']);assert.equal(dedicated[0].role,'primary');
 });

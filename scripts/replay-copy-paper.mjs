@@ -25,4 +25,4 @@ for(const s of fixture.samples){
  await fs.writeFile(resolve(directory,'replay.json'),JSON.stringify({label:'HISTORICAL_REPLAY_WITH_CURRENT_OWN_MARKET_QUOTES_NOT_LIVE',at:Date.now(),acceptance_passed:false,results},null,2));
  console.log(JSON.stringify({hash:s.tx.hash,kind:s.expected.kind,state:saved?.state,reason:saved?.error,provider:saved?decode(saved.data).quote?.provider:null}));
 }
-e.rpc=actualRpc;await fs.writeFile(resolve(directory,'summary.json'),JSON.stringify(await copySummary(store),null,2));db.close();
+e.rpc=actualRpc;await fs.writeFile(resolve(directory,'summary.json'),JSON.stringify({...await copySummary(store),rpc_telemetry:actualRpc.telemetry.snapshot(actualRpc.providers)},null,2));db.close();

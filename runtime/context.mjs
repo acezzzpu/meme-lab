@@ -11,7 +11,7 @@ export async function runtimeContext(){
  const copyEnv=copyEnvironment();
  const db=sqliteDriver(resolve(root,'meme-lab.sqlite')),store=new Store(db,{encryptionKey,copyProviders:copyEnv.providers});await store.init();
  const options={encryptionKey,jupiterKey:process.env.JUPITER_API_KEY??null,allowedRpcHosts:process.env.ALLOWED_RPC_HOSTS??'',runtime:'standalone',location:process.env.RUNTIME_LOCATION==='cloud'?'cloud':'local',engineAvailable:process.env.DISABLE_WORKER!=='1'};
- options.copyKeys=copyEnv.keys;
- options.enableHistoryWorker=true;
+ options.copyKeys=copyEnv.keys;options.paperOnly=copyEnv.freeBaseline===true;
+ options.enableHistoryWorker=process.env.BSC_ENABLE_BACKFILL==='1';
  return {root,encryptionKey,adminToken,db,store,options};
 }

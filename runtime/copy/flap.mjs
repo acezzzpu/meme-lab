@@ -68,18 +68,17 @@ export class FlapRoute {
   check(Number.isInteger(slippageBps)&&slippageBps>=0&&slippageBps<10000,'FLAP_SLIPPAGE_INVALID');
   const start=performance.now(),input=BigInt(amount);check(input>0n,'FLAP_AMOUNT_INVALID');await this.rpc.verify();
   const quoteAt=Date.now(),block=await this.rpc.call('eth_blockNumber');
-  const [state]=await this.rpc.contract(FLAP_PORTAL,FLAP,'getTokenV8Safe',[token],block);
-  check(Number(state.status)===1,Number(state.status)===4?'FLAP_TOKEN_MIGRATED_USE_DEX':'FLAP_TOKEN_NOT_TRADABLE');
-  check(side!=='BUY'||addr(state.quoteTokenAddress)===ZERO||state.nativeToQuoteSwapEnabled,'FLAP_NATIVE_BUY_NOT_ENABLED');
   const path=side==='BUY'?[ZERO,addr(token)]:[addr(token),ZERO];
   // Both calls use one block. Probe comparison includes protocol fees and taxes;
   // it is not a claim about pool reserves or an independently measured spot price.
   const probe=input/1000n;check(probe>0n,'FLAP_AMOUNT_TOO_SMALL_FOR_IMPACT');
-  const [[out],[small],gasPriceHex]=await Promise.all([
+  const [[out],[small],gasPriceHex,[state]]=await Promise.all([
    this.rpc.contract(FLAP_PORTAL,FLAP,'quoteExactInput',[[...path,input]],block),
    this.rpc.contract(FLAP_PORTAL,FLAP,'quoteExactInput',[[...path,probe]],block),
-   this.rpc.call('eth_gasPrice')
+   this.rpc.call('eth_gasPrice'),this.rpc.contract(FLAP_PORTAL,FLAP,'getTokenV8Safe',[token],block)
   ]);
+  check(Number(state.status)===1,Number(state.status)===4?'FLAP_TOKEN_MIGRATED_USE_DEX':'FLAP_TOKEN_NOT_TRADABLE');
+  check(side!=='BUY'||addr(state.quoteTokenAddress)===ZERO||state.nativeToQuoteSwapEnabled,'FLAP_NATIVE_BUY_NOT_ENABLED');
   check(out>0n&&small>0n,'FLAP_EMPTY_QUOTE');
   const ratio=Number(out*probe)/Number(small*input),impact=Math.max(0,(1-ratio)*100);check(Number.isFinite(impact),'FLAP_IMPACT_UNKNOWN');
   const gasPrice=BigInt(gasPriceHex),gas=450000n;

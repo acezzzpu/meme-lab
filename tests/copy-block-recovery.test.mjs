@@ -7,9 +7,9 @@ import {blockWork} from '../runtime/copy/block-worker.mjs';
 import {decode} from '../core/copy/common.mjs';
 const hash=n=>'0x'+n.toString(16).padStart(64,'0');
 const block=n=>({number:'0x'+n.toString(16),hash:hash(n),parentHash:hash(n-1),timestamp:'0x'+Math.floor(Date.now()/1000).toString(16),transactions:[]});
-async function fixture(t){const db=sqliteDriver(':memory:'),store=new Store(db,{encryptionKey:Buffer.alloc(32,12).toString('base64')});await store.init();t.after(()=>db.close());const e=new CopyEngine(store);e.targets=await store.all('SELECT * FROM copy_targets');e.rpc={metrics:[],call:async(_,[tag])=>block(Number(BigInt(tag)))};await store.set('copy_config',{...await store.setting('copy_config'),enabled:true});await store.set('engine_desired','RUNNING');return {e,store};}
+async function fixture(t){const db=sqliteDriver(':memory:'),store=new Store(db,{encryptionKey:Buffer.alloc(32,12).toString('base64')});await store.init();t.after(()=>db.close());const e=new CopyEngine(store,{enableHistoryWorker:true});e.targets=await store.all('SELECT * FROM copy_targets');e.rpc={providers:[{history_dedicated:true}],metrics:[],call:async(_,[tag])=>block(Number(BigInt(tag)))};await store.set('copy_config',{...await store.setting('copy_config'),enabled:true});await store.set('engine_desired','RUNNING');return {e,store};}
 test('legacy failed BLOCK jobs must not permanently suppress gap recovery',async t=>{
- const {e,store}=await fixture(t);await store.set('copy_cursor',100);
+ const {e,store}=await fixture(t);await store.set('copy_cursor',100);e.liveWindow={from_block:101};await store.set('copy_live_cursor',100);
  await e.job('head:101','BLOCK',{height:101,history:true,method:'RECOVERY'});await store.run("UPDATE copy_jobs SET state='FAILED',attempts=6,error='legacy timeout' WHERE id='head:101'");
  await e.block({height:102,method:'HTTP_FALLBACK',received_at:Date.now()});
  const row=await store.get("SELECT state FROM copy_jobs WHERE id='head:101'");assert.equal(row.state,'QUEUED');
