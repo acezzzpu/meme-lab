@@ -1,4 +1,5 @@
 import {classifySimulationFailure} from '../../core/copy/simulation-failure.mjs';
+import {compareValidatedShadow} from './shadow-validation.mjs';
 import {BSC,ROUTER,SMART_ROUTER,ERC20,hex,addr,v3Path,check,transferDeltas,cleanError} from '../../core/copy/common.mjs';
 import {smartCalls} from '../../core/copy/smart-router.mjs';
 import {saveProfile} from '../../core/copy/latency-profile.mjs';
@@ -38,7 +39,7 @@ export class ShadowReadBudget {
  take(){check(this.remaining()>0,'SHADOW_RPC_BUDGET_EXHAUSTED');this.starts.push(this.now());}
 }
 // Only these read methods are reachable; no signing or broadcast capability.
-const READ_METHODS=new Set(['eth_call','eth_estimateGas','eth_simulateV1']);
+const READ_METHODS=new Set(['eth_call','eth_estimateGas','eth_simulateV1','eth_blockNumber','eth_gasPrice']);
 export async function shadowRead(e,method,params){
  check(READ_METHODS.has(method),'SHADOW_READ_ONLY_METHOD');e.shadowBudget??=new ShadowReadBudget();
  const providers=e.rpc.providers.filter(p=>p.enabled&&e.rpc.verified.has(p.id)&&!['archive','benchmark'].includes(p.role)&&Date.now()>=(e.rpc.cooldown.get(p.id)??0)&&Date.now()>=(e.rpc.unsupported.get(p.id+':'+method)??0));
@@ -78,5 +79,5 @@ export async function compareShadow(e,action,event,q,c){
 }
 export function scheduleShadow(e,action,event,q,c){
  if(!e.options.paperOnly||e.options.historicalReplay||event.history||action.mode!=='PAPER'||process.env.BSC_SHADOW_COMPARE==='0')return;
- e.shadowTasks??=new Set();const task=compareShadow(e,action,event,q,c).catch(async error=>{await e.report('SHADOW',cleanError(error)).catch(()=>{});}).finally(()=>e.shadowTasks.delete(task));e.shadowTasks.add(task);
+ e.shadowTasks??=new Set();const task=compareValidatedShadow(e,action,event,q,c).catch(async error=>{await e.report('SHADOW',cleanError(error)).catch(()=>{});}).finally(()=>e.shadowTasks.delete(task));e.shadowTasks.add(task);
 }
