@@ -34,6 +34,9 @@ export function freeBscProviders(){return [
  // This is NodeReal's documented public/shareable key, not a user credential.
  // https://docs.nodereal.io/reference/getting-started-with-your-api
  {id:'free-nodereal',label:'NodeReal public BSC',role:'secondary',http_url:'https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3',ws_url:'wss://bsc-mainnet.nodereal.io/ws/v1/64a9df0874fb4a93b9d0a3849de012d3',pending:'NONE',wallet_logs:false,requests_per_second:1,credit_unit:20,notification_credit_per_byte:.04},
- {id:'free-bnb',label:'BNB official public RPC',role:'fallback',http_url:'https://bsc-dataseed.bnbchain.org',ws_url:null,pending:'NONE'},
+ // Actual Render receipt sample: 8/8 successful, P50 11.69 ms; PublicNode 403.
+ // This preference affects receipt reads only. Every normal fallback remains.
+ {id:'free-bnb',label:'BNB official public RPC',role:'fallback',receipt_primary:true,http_url:'https://bsc-dataseed.bnbchain.org',ws_url:null,pending:'NONE'},
  {id:'free-drpc',label:'dRPC public BSC',role:'fallback',http_url:'https://bsc.drpc.org',ws_url:null,pending:'NONE',requests_per_second:1},
  ].map(p=>({...p,enabled:true,requests_per_second:p.requests_per_second??8,credit_unit:p.credit_unit??0,hash_lookups_per_minute:0,history_dedicated:false,public_free:true}));}
+
