@@ -65,6 +65,10 @@ async function perform(job){
 }
 async function schedule(){
  if(closing||!ready)return;
+ // The BNB free-baseline run is exclusively COPY PAPER. Existing Solana,
+ // discovery and learning queues stay durable, but cannot share this worker's
+ // CPU, connection pool or network budget during the BNB validation window.
+ if(options.paperOnly)return;
  const desired=await store.setting('engine_desired');
  if(desired!=='RUNNING'){
   if(streamsActive){await streams.stop();streamsActive=false;}
