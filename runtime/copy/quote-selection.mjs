@@ -1,3 +1,4 @@
+import {QuoteTrace} from './quote-profile.mjs';
 import {check,cleanError} from '../../core/copy/common.mjs';
 
 export function candidatePriority(provider,request,priority){
@@ -13,7 +14,8 @@ export function candidatePriority(provider,request,priority){
 export async function selectQuote(providers,request,{rpc,live=false,priority=0,allowUnknownImpact=false,validate=q=>q,onQuote=async()=>{},deadlineAt=Date.now()+4000}={}){
  const controllers=providers.map(()=>new AbortController()),attempts=providers.map(p=>({provider:p.id,status:'PENDING'}));
  let timer,finished=false,remaining=providers.length;
- const snapshot=reason=>attempts.map(a=>({...a,status:a.status==='PENDING'||a.status==='QUOTED'?reason:a.status}));
+ const traces=providers.map(p=>new QuoteTrace(p.id));
+ const snapshot=reason=>attempts.map((a,i)=>({...a,quote_profile:traces[i].snapshot(),status:a.status==='PENDING'||a.status==='QUOTED'?reason:a.status}));
  return new Promise((resolve,reject)=>{
   const cancel=()=>controllers.forEach(c=>c.abort(Error('QUOTE_SELECTION_FINISHED')));
   const fail=reason=>{if(finished)return;finished=true;clearTimeout(timer);const error=Error(reason);error.route_errors=snapshot(reason==='ROUTE_QUOTE_TIMEOUT'?'TIMED_OUT':'ERROR');cancel();reject(error);};
@@ -22,7 +24,7 @@ export async function selectQuote(providers,request,{rpc,live=false,priority=0,a
   providers.forEach((provider,i)=>{
    const run=async()=>{
     const started=performance.now();attempts[i].quote_start=Date.now();
-    const q=await provider.quote({...request,signal:controllers[i].signal});if(finished)return;
+    const work=()=>provider.quote({...request,signal:controllers[i].signal});let raw;try{raw=await (rpc?.withContext?rpc.withContext({quoteTrace:traces[i]},work):work());}finally{traces[i].finished=performance.now();}const q={...raw,quote_profile:traces[i].snapshot()};if(finished)return;
     attempts[i]={...attempts[i],provider:provider.id,status:'QUOTED',quote_end:Date.now(),measured_quote_ms:performance.now()-started,out_raw:q.out_raw,fee_raw:q.fee_raw,quote_ms:q.quote_ms,impact_pct:q.impact_pct};
     await onQuote(q);if(finished)return;
     if(live||!allowUnknownImpact)check(Number.isFinite(q.impact_pct),'IMPACT_UNKNOWN');check(!live||['PANCAKE_V2','PANCAKE_SMART'].includes(q.provider),'ROUTE_NOT_LIVE_VALIDATED');

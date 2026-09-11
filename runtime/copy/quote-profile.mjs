@@ -1,0 +1,9 @@
+// Passive timing: no additional RPC, no selection or timeout changes.
+const phaseFor=m=>['getPair','getPool','token0','token1','factory','fee','decimals','symbol','WETH','WETH9','factoryV2'].includes(m)?'POOL_AND_METADATA':m==='getReserves'||m==='slot0'?'POOL_STATE':m==='getAmountsOut'||m==='quoteExactInput'?'QUOTE_CALCULATION':'RPC_CONTEXT';
+export function intervalUnion(spans){const a=spans.filter(x=>Number.isFinite(x[0])&&Number.isFinite(x[1])).sort((a,b)=>a[0]-b[0]);let total=0,end=-Infinity;for(const [s,e] of a){total+=Math.max(0,e-Math.max(s,end));end=Math.max(end,e);}return total;}
+export class QuoteTrace {
+ constructor(provider){this.provider=provider;this.started=performance.now();this.started_at=Date.now();this.calls=[];this.contracts=[];this.cache={hits:0,misses:0};this.call_count=0;this.finished=null;}
+ rpc(row){this.call_count++;if(this.calls.length<96)this.calls.push(row);}
+ contract(method,at,end){if(this.contracts.length<192)this.contracts.push({method,phase:phaseFor(method),start:at-this.started,end:end-this.started});}
+ snapshot(){const until=this.finished??performance.now(),spans=this.contracts;return {version:1,provider:this.provider,started_at:this.started_at,total_ms:until-this.started,complete:this.finished!==null,phases_ms:Object.fromEntries(['POOL_AND_METADATA','POOL_STATE','QUOTE_CALCULATION','RPC_CONTEXT'].map(p=>[p,intervalUnion(spans.filter(s=>s.phase===p).map(s=>[s.start,s.end]))])),cache:this.cache,rpc_calls:this.call_count,wire_sum_ms:this.calls.reduce((n,c)=>n+c.wire_ms,0),queue_sum_ms:this.calls.reduce((n,c)=>n+c.queue_ms,0),rpc:this.calls,phase_spans:spans,transport:'Existing Node fetch connection pool; DNS/TCP/TLS not separately observable per request. See bounded transport probe.',note:'Phase spans and concurrent RPC sums overlap; never add these fields to infer wall latency.'};}
+}
