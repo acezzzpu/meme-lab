@@ -11,9 +11,9 @@ function checked(result,n,stage){const rows=result?.result?.[0]?.calls;check(row
 export async function atomicShadowTemplate(e,q,c){
  try{buildShadowUnsigned(q,c);return q;}catch(error){if(!/NO_ATOMIC_BUILDER/.test(error.message))throw error;}
  const edge=q.hops?.find(h=>h.adapter==='PANCAKE_V2'&&[h.tokenIn,h.tokenOut].includes(q.token));
- check(edge,'SHADOW_NO_ATOMIC_BUILDER_FOR_QUOTED_PATH');const stable=edge.tokenIn===q.token?edge.tokenOut:edge.tokenIn;
- check([BSC.usdt,BSC.usdc,BSC.wbnb].includes(stable),'SHADOW_NO_ATOMIC_BUILDER_FOR_QUOTED_PATH');
- const path=stable===BSC.wbnb?[BSC.wbnb,q.token]:[BSC.wbnb,stable,q.token],pools=[];
+ check(edge,'SHADOW_NO_ATOMIC_BUILDER_FOR_QUOTED_PATH');const bridge=edge.tokenIn===q.token?edge.tokenOut:edge.tokenIn;
+ check(/^0x[0-9a-f]{40}$/.test(bridge??'')&&bridge!==q.token,'SHADOW_NO_ATOMIC_BUILDER_FOR_QUOTED_PATH');
+ const path=bridge===BSC.wbnb?[BSC.wbnb,q.token]:[BSC.wbnb,bridge,q.token],pools=[];
  for(let i=1;i<path.length;i++){
   const data=FACTORY.encodeFunctionData('getPair',[path[i-1],path[i]]),r=await shadowRead(e,'eth_call',[{to:BSC.factory,data},'latest']);
   const [pair]=FACTORY.decodeFunctionResult('getPair',r.result);check(BigInt(pair)>0n,'SHADOW_NO_ATOMIC_PANCAKE_V2_ROUTE');pools.push(addr(pair));
