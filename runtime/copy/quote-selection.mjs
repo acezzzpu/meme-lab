@@ -1,5 +1,13 @@
 import {check,cleanError} from '../../core/copy/common.mjs';
 
+export function candidatePriority(provider,request,priority){
+ // Render's 3237 ms PAPER_DEX_PATH quote competed with 12 speculative V3
+ // discovery reads that found no route. Keep those reads running, but reserve
+ // urgent slots for the actual receipt's candidate pool authentication.
+ const speculative=request.paper&&provider.id==='PANCAKE_SMART'&&request.candidatePools?.length&&!request.hints?.some(h=>h.token0&&h.token1);
+ return speculative?Math.min(-1,priority):priority;
+}
+
 // Return the first policy-compatible quote. Cancel slower work instead of waiting
 // for every adapter. This deliberately does not claim the best possible price.
 export async function selectQuote(providers,request,{rpc,live=false,priority=0,allowUnknownImpact=false,validate=q=>q,onQuote=async()=>{},deadlineAt=Date.now()+4000}={}){
@@ -22,7 +30,7 @@ export async function selectQuote(providers,request,{rpc,live=false,priority=0,a
     check(Date.now()<deadlineAt,'SIGNAL_EXPIRED');attempts[i].status='ELIGIBLE';finished=true;clearTimeout(timer);
     const evidence=snapshot('CANCELLED_AFTER_SELECTION');cancel();resolve({...eligible,selection:'FIRST_POLICY_COMPATIBLE',route_comparison:evidence,route_errors:evidence.filter(a=>a.status==='ERROR'||a.status==='INELIGIBLE')});
    };
-   Promise.resolve().then(()=>rpc?.withContext?rpc.withContext({signal:controllers[i].signal,priority},run):run()).catch(error=>{
+   Promise.resolve().then(()=>rpc?.withContext?rpc.withContext({signal:controllers[i].signal,priority:candidatePriority(provider,request,priority)},run):run()).catch(error=>{
     if(finished)return;attempts[i]={...attempts[i],status:attempts[i].status==='QUOTED'?'INELIGIBLE':'ERROR',error:cleanError(error),quote_end:Date.now()};
    }).finally(()=>{remaining--;if(!remaining&&!finished)fail('NO_EXECUTABLE_ROUTE');});
   });
