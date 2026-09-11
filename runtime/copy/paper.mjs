@@ -1,4 +1,5 @@
 import {saveProfile} from '../../core/copy/latency-profile.mjs';
+import {scheduleShadow} from './shadow-compare.mjs';
 import {assertCopyFence,calculateSize,applyFill} from '../../core/copy/execution-policy.mjs';
 import {account} from '../../core/copy/service.mjs';
 import {BSC,check,decode,encode,cleanError,bucket} from '../../core/copy/common.mjs';
@@ -7,14 +8,14 @@ import {applyTaxes} from './safety.mjs';
 // PAPER is an audited virtual ledger. It never builds approvals, asks a signer,
 // sends a transaction, or interprets a simulated fill as an on-chain execution.
 export async function processPaperAction(e,action){
- let data=decode(action.data);const start=performance.now(),attempts=[];
+ let data=decode(action.data);const start=performance.now(),attempts=[];let quoteBegin=null,firstResponse=null,positionStage=null;
  try{
   const {config:c,target:tc,event}=await assertCopyFence(e.store,action,{paperResearch:true});
   const usd=tc.size_mode==='FIXED_USD'?await e.freshPrice():null;
   const amount=await calculateSize(e.store,action.mode,tc,action.target_id,event,c,usd);check(amount>0n,'ZERO_COPY_AMOUNT');
   const position=await e.store.get('SELECT data FROM copy_positions WHERE target_id=? AND token=? AND mode=? AND closed_at IS NULL',action.target_id,event.token,bucket(action.mode));
   const cash=await account(e.store,action.mode,c);check(action.side!=='BUY'||cash.cash-cash.reserved>=amount,'PAPER_BALANCE_INSUFFICIENT');
-  const positionStateMs=performance.now()-start;const times={...(event.timings??{}),quotes_started_at:Date.now()};let firstQuoteMono=null;
+  const positionStateMs=performance.now()-start;positionStage=positionStateMs;const times={...(event.timings??{}),quotes_started_at:Date.now()};let firstQuoteMono=null;
   const cachedSafety=e.safety?.cache?.get(event.token);
   let safetyResult=cachedSafety;
   // Safety enrichment runs independently. Unknown tax is shown as an explicit
@@ -34,8 +35,8 @@ export async function processPaperAction(e,action){
    return {...q,tax_classification:tax===null?'UNKNOWN_TAX':tax>0?'BUY_SELL_TAX':'NORMAL_TOKEN',tax_rate:tax};
   };
   await e.updateAction(action,'PROCESSING',data,null,{amount:String(amount)});
-  const quoteStart=performance.now();
-  const q=await e.routes.quote({side:action.side,token:event.token,amount:String(amount),slippageBps:c.max_slippage_bps,taker:'0x000000000000000000000000000000000000dead',paper:true,prefetchedQuote:e.pendingQuotes?.get(event.hash)?.promise,candidatePools:event.candidate_pools??[],hints:[...(decode(position?.data).pools??[]),...(event.pools??[])]},{live:false,allowUnknownImpact:true,priority:2,deadlineAt:Date.now()+8000,validate,onQuote:async q=>{if(firstQuoteMono===null){firstQuoteMono=performance.now();times.first_quote_at=Date.now();times.first_quote_received_at=times.first_quote_at;}attempts.push({provider:q.provider,quoted_at:q.quoted_at,out_raw:q.out_raw,quote_ms:q.quote_ms});}});
+  const quoteStart=performance.now();quoteBegin=quoteStart;
+  const q=await e.routes.quote({side:action.side,token:event.token,amount:String(amount),slippageBps:c.max_slippage_bps,taker:'0x000000000000000000000000000000000000dead',paper:true,prefetchedQuote:e.pendingQuotes?.get(event.hash)?.promise,candidatePools:event.candidate_pools??[],hints:[...(decode(position?.data).pools??[]),...(event.pools??[])]},{live:false,allowUnknownImpact:true,priority:2,deadlineAt:Date.now()+8000,validate,onQuote:async q=>{if(firstQuoteMono===null){firstQuoteMono=performance.now();firstResponse=firstQuoteMono;times.first_quote_at=Date.now();times.first_quote_received_at=times.first_quote_at;}attempts.push({provider:q.provider,quoted_at:q.quoted_at,out_raw:q.out_raw,quote_ms:q.quote_ms});}});
   times.selected_quote_at=Date.now();const quoteMs=performance.now()-quoteStart,executionStart=performance.now();
   const available=await account(e.store,action.mode,c),fee=BigInt(q.fee_raw);check(available.cash-available.reserved>=(action.side==='BUY'?amount:0n)+fee,'PAPER_BALANCE_INSUFFICIENT');
   await assertCopyFence(e.store,action,{paperResearch:true});
@@ -50,10 +51,12 @@ export async function processPaperAction(e,action){
   await e.sample('PAPER_PROCESS_MS',processMs,action.event_id,'PAPER',{clock:'MONOTONIC_LOCAL',historical:!!event.history});
   const origin=e.eventClocks?.get(event.hash);if(origin?.boot===e.boot){const reaction=fillMono-origin.mono;if(!event.history)await e.store.run("UPDATE copy_actions SET data=json_set(data,'$.paper_reaction_ms',?) WHERE id=?",reaction,action.id);await e.sample(event.history?'HISTORICAL_RESEARCH_MS':'PAPER_REACTION_MS',reaction,action.event_id,'PAPER',{clock:'MONOTONIC_LOCAL',first_seen_at:origin.wall});if(!event.history)await e.sample('TOTAL_COPY_REACTION_MS',reaction,action.event_id,'PAPER',{clock:'MONOTONIC_LOCAL',first_seen_at:origin.wall});}
   if(event.latency){const sourceClock=e.eventClocks?.get(event.hash);await saveProfile(e.store,action.event_id,{paper:{action_id:action.id,status:'FILLED',input_raw:String(amount),output_raw:q.min_out_raw,fee_raw:q.fee_raw,quote:q,quote_attempts:attempts,price_bnb:price,classification:'ESTIMATED',result:'VIRTUAL_CURRENT_QUOTE'},wall:{quote_request_start:times.quotes_started_at,quote_first_response:times.first_quote_at,paper_execution_at:times.paper_fill_at},stages:{POSITION_STATE:positionStateMs,QUOTE_FIRST_RESPONSE:firstQuoteMono===null?null:firstQuoteMono-quoteStart,QUOTE:quoteMs,ROUTE_SELECTION:firstQuoteMono===null?null:Math.max(0,executionStart-firstQuoteMono),PAPER_EXECUTION:fillMono-executionStart,TOTAL_PAPER_REACTION:sourceClock?.boot===e.boot&&Number.isFinite(sourceClock.mono)?fillMono-sourceClock.mono:null}});}
+  scheduleShadow(e,action,event,q,c);
   await e.report('FILL',`${event.history?'HISTORICAL RESEARCH · ':''}PAPER ${action.side}`,{action_id:action.id,target_hash:event.hash,token:event.token,amount_raw:String(amount),output_raw:q.min_out_raw,quote_ms:quoteMs,process_ms:processMs,tax:q.tax_classification});
  }catch(error){
   const row=await e.store.get('SELECT * FROM copy_actions WHERE id=?',action.id);if(!row||['FILLED','CANCELLED'].includes(row.state))return;
   await e.updateAction(row,'REJECTED',{...data,quote_attempts:attempts,route_errors:error.route_errors??[],detection_success:true,execution_success:false,copy_status:cleanError(error).includes('ROUTE')?'NO_EXECUTABLE_ROUTE':'PAPER_COPY_FAILED'},cleanError(error),{reserved:'0'});
+  if(data.event?.latency)await saveProfile(e.store,action.event_id,{paper:{action_id:action.id,status:'REJECTED',error:cleanError(error),quote_attempts:attempts,route_errors:error.route_errors??[]},stages:{POSITION_STATE:positionStage,QUOTE_FAILED:quoteBegin===null?null:performance.now()-quoteBegin,QUOTE_FIRST_RESPONSE:firstResponse===null?null:firstResponse-quoteBegin,PAPER_REJECTION:performance.now()-start}});
   await e.report('REJECT','PAPER '+cleanError(error),{action_id:action.id,target_hash:data.event?.hash});
  }
 }
