@@ -1,5 +1,4 @@
-import {execFileSync} from 'node:child_process';
-import {writeFileSync} from 'node:fs';
+import {writeFileSync,readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {sqliteDriver} from '../runtime/sqlite.mjs';
@@ -10,7 +9,8 @@ const BASE='4285248983af442dee974582b304a32e7888eeab',names=['rpc','routes','pap
 const id=process.argv[2],hash=process.argv[3];if(!['PANCAKE_V2','PANCAKE_SMART','PAPER_DEX_PATH','FLAP_PORTAL'].includes(id)||!/^0x[0-9a-f]{64}$/.test(hash??''))throw Error('PROVIDER_AND_EXISTING_HASH_REQUIRED');
 // A read-only source snapshot in separate diagnostic files. Never checkout,
 // reset, update a branch or alter the running worker's imports.
-for(const name of names){let src=execFileSync('git',['show',BASE+':runtime/copy/'+name+'.mjs'],{encoding:'utf8'});for(const dep of names)src=src.replaceAll("'./"+dep+".mjs'","'./diagnostic-before-"+dep+".mjs'");writeFileSync(resolve('runtime/copy/diagnostic-before-'+name+'.mjs'),src);}
+const snapshot=JSON.parse(readFileSync(new URL('../tests/fixtures/quote-baseline-4285248.json',import.meta.url),'utf8'));if(snapshot.commit!==BASE)throw Error('QUOTE_BASELINE_MISMATCH');
+for(const name of names){let src=snapshot.sources[name];for(const dep of names)src=src.replaceAll("'./"+dep+".mjs'","'./diagnostic-before-"+dep+".mjs'");writeFileSync(resolve('runtime/copy/diagnostic-before-'+name+'.mjs'),src);}
 const db=sqliteDriver(resolve(process.env.DATA_DIR??'data','meme-lab.sqlite')),store=new Store(db),row=await store.get("SELECT a.data FROM copy_actions a JOIN copy_events e ON e.id=a.event_id WHERE a.mode='PAPER' AND e.hash=?",hash);if(!row)throw Error('EXISTING_ACTION_REQUIRED');const a=JSON.parse(row.data),c=await store.setting('copy_config');
 const results=[],providers=freeBscProviders();let totalReads=0;
 for(const version of ['BEFORE','AFTER']){
