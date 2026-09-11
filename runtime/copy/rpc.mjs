@@ -1,3 +1,4 @@
+import {poolLookupTtl} from './route-metadata.mjs';
 import {AsyncLocalStorage} from 'node:async_hooks';
 import {RpcTelemetry} from './rpc-telemetry.mjs';
 import {BSC,check,encode,cleanError,hex} from '../../core/copy/common.mjs';
@@ -39,7 +40,7 @@ export class BscRpc {
   if(this.context.getStore()?.quoteTrace)this.context.getStore().quoteTrace.cache.misses++;this.telemetry.cache(false);const signal=this.context.getStore()?.signal;
   // Immutable/short-lived reads are shared. One quote losing its race must not
   // cancel the metadata read needed by the winning quote. The RPC still times out.
-  const task=this.withContext({signal:undefined},work).then(value=>{if(value!==null)this.cache.set(key,{value,until:Date.now()+ttl});if(this.cache.size>2000)this.cache.delete(this.cache.keys().next().value);return value;}).finally(()=>this.cacheFlights.delete(key));
+  const task=this.withContext({signal:undefined},work).then(value=>{if(value!==null)this.cache.set(key,{value,until:Date.now()+(typeof ttl==='function'?ttl(value):ttl)});if(this.cache.size>2000)this.cache.delete(this.cache.keys().next().value);return value;}).finally(()=>this.cacheFlights.delete(key));
   this.cacheFlights.set(key,task);return signal?abortable(task,signal):task;
  }
  async request(provider,method,params=[],timeout=this.timeout){
@@ -102,7 +103,7 @@ export class BscRpc {
   });
  }
  async verify(){const chain=await this.call('eth_chainId');check(Number(BigInt(chain))===BSC.chainId,'WRONG_CHAIN_ID');return Number(BigInt(await this.call('eth_blockNumber')));}
- async contract(to,abi,method,args=[],block='latest'){const trace=this.context.getStore()?.quoteTrace,started=performance.now();try{const data=abi.encodeFunctionData(method,args),read=()=>this.withContext({contractMethod:method,contractAddress:to},()=>this.call('eth_call',[{to,data},block]));const immutable=['decimals','symbol','token0','token1','factory','fee','WETH'].includes(method),pool=['getPair','getPool'].includes(method);const out=immutable||pool?await this.cached(to.toLowerCase()+':'+data,immutable?3600000:60000,read):await read();return abi.decodeFunctionResult(method,out);}finally{trace?.contract(method,started,performance.now());}}
+ async contract(to,abi,method,args=[],block='latest'){const trace=this.context.getStore()?.quoteTrace,started=performance.now();try{const data=abi.encodeFunctionData(method,args),read=()=>this.withContext({contractMethod:method,contractAddress:to},()=>this.call('eth_call',[{to,data},block]));const immutable=['decimals','symbol','token0','token1','factory','fee','WETH'].includes(method),pool=['getPair','getPool'].includes(method);const out=immutable||pool?await this.cached(to.toLowerCase()+':'+data,immutable?3600000:value=>poolLookupTtl(to,value),read):await read();if(pool)this.routeMetadataChanged?.();return abi.decodeFunctionResult(method,out);}finally{trace?.contract(method,started,performance.now());}}
  async benchmark(){const results=await Promise.allSettled(this.providers.map(async p=>{const start=performance.now();const chain=await this.request(p,'eth_chainId');check(Number(BigInt(chain))===56,'WRONG_CHAIN_ID');const block=await this.request(p,'eth_getBlockByNumber',['latest',false]);return {provider:p.id,chain_id:56,block:Number(BigInt(block.number)),block_at:Number(BigInt(block.timestamp))*1000,received_at:Date.now(),duration_ms:performance.now()-start,method:'HTTP chainId + latest block'};}));return results.map((r,i)=>r.status==='fulfilled'?r.value:{provider:this.providers[i].id,error:cleanError(r.reason)});}
 }
 export async function tokenMetadata(rpc,token){const {ERC20}=await import('../../core/copy/common.mjs');const [[d],s]=await Promise.all([rpc.contract(token,ERC20,'decimals'),rpc.contract(token,ERC20,'symbol').catch(()=>[null])]);check(Number(d)<=36,'UNSUPPORTED_DECIMALS');return {decimals:Number(d),symbol:s[0]??token.slice(0,8)};}

@@ -5,7 +5,7 @@ export function candidatePriority(provider,request,priority){
  // Render's 3237 ms PAPER_DEX_PATH quote competed with 12 speculative V3
  // discovery reads that found no route. Keep those reads running, but reserve
  // urgent slots for the actual receipt's candidate pool authentication.
- const speculative=request.paper&&provider.id==='PANCAKE_SMART'&&request.candidatePools?.length&&!request.hints?.some(h=>h.token0&&h.token1);
+ const speculative=request.paper&&!provider.authenticatesObservedPools&&provider.id==='PANCAKE_SMART'&&request.candidatePools?.length&&!request.hints?.some(h=>h.token0&&h.token1);
  return speculative?Math.min(-1,priority):priority;
 }
 
