@@ -29,3 +29,8 @@ test('profiles survive SQLite restart, merge stages once and never count histori
  assert.equal(out.live_sample_count,1);assert.equal(out.stages.DECODE.n,1);assert.equal(out.stages.QUOTE.n,1);assert.equal(out.records.find(r=>r.paper).stages.DECODE,2);db.close();rmSync(dir,{recursive:true});
 });
 test('diagnostic persistence error cannot reject execution',async()=>{assert.equal(await saveProfile({run:async()=>{throw Error('disk error');}},'e',{stages:{DECODE:2}}),false);});
+test('log observed before local head is an ordering observation, never negative detection latency',()=>{
+ const p=observationProfile({boot:1,eventClocks:new Map()},{target:'t',hash:'h',clock_boot:1,head_received_mono:100,received_mono:96},{side:'BUY',token:'x'},{},{});
+ assert.equal(p.stages.BLOCK_DETECTION,null);assert.equal(p.head_to_target_observation_ms,-4);
+ assert.equal(p.block_detection_unavailable_reason,'TARGET_LOG_OBSERVED_BEFORE_LOCAL_HEAD');assert.equal(p.detection_source,'BLOCK');
+});

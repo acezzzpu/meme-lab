@@ -16,6 +16,12 @@ test('Pancake unsigned swaps bind path, size, recipient and deadline',()=>{
 test('mixed Uniswap/Pancake indicative route is never represented as an atomic unsigned swap',()=>{
  assert.throws(()=>buildShadowUnsigned({...quote(),provider:'PAPER_DEX_PATH',hops:[{adapter:'PANCAKE_V2'},{adapter:'UNISWAP_V3'}]},config),/NO_ATOMIC_BUILDER/);
 });
+test('failed SHADOW build persists its real duration and does not attempt network requests',async()=>{
+ const db=sqliteDriver(':memory:'),store=new Store(db);await store.init();
+ const result=await compareShadow({store,eventClocks:new Map()},{id:'a',side:'BUY',event_id:'ev'},{hash:'h',token,side:'BUY'},{...quote(),provider:'PAPER_DEX_PATH',hops:[{adapter:'PANCAKE_V2'},{adapter:'UNISWAP_V3'}]},config);
+ assert.equal(result.status,'BUILD_FAILED');assert.equal(result.simulation.status,'NOT_ATTEMPTED');
+ const p=decode((await store.get('SELECT data FROM copy_latency_profiles')).data);assert.ok(p.stages.SHADOW_BUILD>=0);assert.equal((await store.get('SELECT COUNT(*) n FROM copy_ledger')).n,0);db.close();
+});
 test('SHADOW hard read budget, read-only method allowlist and independent ledger',async()=>{
  let now=100000;const budget=new ShadowReadBudget({limit:2,now:()=>now});budget.take();budget.take();assert.throws(()=>budget.take(),/BUDGET/);now+=60001;budget.take();
  await assert.rejects(shadowRead({},'eth_sendRawTransaction',[]),/READ_ONLY/);
