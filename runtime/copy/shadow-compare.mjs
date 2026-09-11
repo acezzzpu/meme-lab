@@ -16,7 +16,7 @@ export function buildShadowUnsigned(q,c,now=Date.now()){
  const buy=q.side==='BUY',token=addr(q.token),wallet=SHADOW_WALLET,deadline=Math.floor(now/1000)+c.deadline_seconds;
  let to,data,onchainDeadline=deadline;
  if(q.provider==='FLAP_PORTAL'){
-  check(q.portal_state?.status===1,'SHADOW_FLAP_NOT_TRADABLE');to=FLAP_PORTAL;
+  check(q.portal_state?.status===1||q.portal_state?.status===4&&q.shadow_only_migrated_portal===true,'SHADOW_FLAP_NOT_TRADABLE');to=FLAP_PORTAL;
   data=FLAP.encodeFunctionData('swapExactInput',[[buy?ZERO:token,buy?token:ZERO,q.amount_raw,q.min_out_raw,'0x']]);onchainDeadline=null;
  }else if(q.provider==='PANCAKE_V2'||q.provider==='PAPER_DEX_PATH'&&q.hops?.every(h=>h.adapter==='PANCAKE_V2')){
   check(q.route[0]===(buy?BSC.wbnb:token)&&q.route.at(-1)===(buy?token:BSC.wbnb),'SHADOW_PATH_MISMATCH');to=BSC.router;
@@ -49,6 +49,12 @@ export async function shadowRead(e,method,params){
   catch(error){last=error;if(/execution reverted|insufficient funds|allowance|transfer amount exceeds/i.test(error.message))throw error;}
  }
  throw last??Error('SHADOW_NO_AVAILABLE_READ_PROVIDER');
+}
+export async function refreshShadowPortal(e,q,parent){
+ if(q.provider!=='FLAP_PORTAL')return q;
+ const r=await shadowRead(e,'eth_call',[{to:FLAP_PORTAL,data:FLAP.encodeFunctionData('getTokenV8Safe',[q.token])},parent]),[state]=FLAP.decodeFunctionResult('getTokenV8Safe',r.result),status=Number(state.status);
+ check([1,4].includes(status),'SHADOW_FLAP_NOT_TRADABLE');
+ return {...q,portal_state:{status,quote_token:addr(state.quoteTokenAddress),buy_tax_bps:Number(state.buyTaxRate),sell_tax_bps:Number(state.sellTaxRate)},portal_state_block:parent,shadow_only_migrated_portal:status===4,portal_route_note:status===4?'Migrated token; portal execution must be proven by the following real contract simulation. This does not enable the PAPER Flap adapter.':null};
 }
 export async function compareShadow(e,action,event,q,c){
  const started=performance.now();let evidence={status:'BUILDING',side:action.side,token:event.token,target_hash:event.hash,paper_action_id:action.id,quote:q,classification:'ESTIMATED',unsigned_tx_built:false,simulation:{status:'NOT_ATTEMPTED'},private_key_used:false,signed:false,broadcast:false,position_source:'EXACT_PAPER_INPUT_AMOUNT; NO_SHADOW_FILL_ASSUMED',target_exit_fraction:event.sold_fraction??null},buildMs=null,simulationMs=null;

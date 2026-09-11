@@ -1,5 +1,5 @@
 // Passive timing: no additional RPC, no selection or timeout changes.
-const phaseFor=m=>['getPair','getPool','token0','token1','factory','fee','decimals','symbol','WETH','WETH9','factoryV2'].includes(m)?'POOL_AND_METADATA':m==='getReserves'||m==='slot0'?'POOL_STATE':m==='getAmountsOut'||m==='quoteExactInput'?'QUOTE_CALCULATION':'RPC_CONTEXT';
+const phaseFor=m=>['getPair','getPool','token0','token1','factory','fee','decimals','symbol','WETH','WETH9','factoryV2'].includes(m)?'POOL_AND_METADATA':['getReserves','slot0','getTokenV8Safe'].includes(m)?'POOL_STATE':m==='getAmountsOut'||m==='quoteExactInput'?'QUOTE_CALCULATION':'RPC_CONTEXT';
 export function intervalUnion(spans){const a=spans.filter(x=>Number.isFinite(x[0])&&Number.isFinite(x[1])).sort((a,b)=>a[0]-b[0]);let total=0,end=-Infinity;for(const [s,e] of a){total+=Math.max(0,e-Math.max(s,end));end=Math.max(end,e);}return total;}
 export class QuoteTrace {
  constructor(provider){this.provider=provider;this.started=performance.now();this.started_at=Date.now();this.calls=[];this.contracts=[];this.cache={hits:0,misses:0};this.call_count=0;this.finished=null;}

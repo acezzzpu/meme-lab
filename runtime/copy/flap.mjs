@@ -66,7 +66,9 @@ export class FlapRoute {
  async quote({side,token,amount,slippageBps,taker}){
   check(['BUY','SELL'].includes(side),'FLAP_SIDE_INVALID');
   check(Number.isInteger(slippageBps)&&slippageBps>=0&&slippageBps<10000,'FLAP_SLIPPAGE_INVALID');
-  const start=performance.now(),input=BigInt(amount);check(input>0n,'FLAP_AMOUNT_INVALID');await this.rpc.verify();
+  const start=performance.now(),input=BigInt(amount);check(input>0n,'FLAP_AMOUNT_INVALID');
+  // BscRpc verifies chain 56 before each provider's first read. An extra verify()
+  // here repeated chainId and an unused head read on every quote.
   const quoteAt=Date.now(),block=await this.rpc.call('eth_blockNumber');
   const path=side==='BUY'?[ZERO,addr(token)]:[addr(token),ZERO];
   // Both calls use one block. Probe comparison includes protocol fees and taxes;

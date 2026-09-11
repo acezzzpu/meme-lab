@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {BSC} from '../core/copy/common.mjs';
+import {BSC,PAIR,FACTORY,V2_SWAP} from '../core/copy/common.mjs';
 import {poolLookupTtl,localV2AmountOut,restoreRouteMetadata} from '../runtime/copy/route-metadata.mjs';
 import {PaperDexRoute} from '../runtime/copy/paper-dex-route.mjs';
 import {PancakeV2Route} from '../runtime/copy/routes.mjs';
@@ -10,3 +10,11 @@ test('authenticated pool metadata is shared by concurrent route adapters and sur
 test('nonexistent Pancake pools do not invoke reverting amount quotes',async()=>{let quotes=0;const rpc={contract:async(_t,_a,m)=>{if(m==='getAmountsOut'){quotes++;throw Error('unexpected');}if(m==='getPair')return ['0x'+'00'.repeat(20)];throw Error(m);},call:async()=>word(1)};const r=new PancakeV2Route(rpc);r.verifiedAt=Date.now();await assert.rejects(r.quote({side:'BUY',token:'0x'+'56'.repeat(20),amount:'100',slippageBps:100}),/NO_PANCAKE/);assert.equal(quotes,0);});
 test('V2 local arithmetic uses exact integer 0.25 percent fee and floors output',()=>{assert.equal(localV2AmountOut(1000,100000,200000),1975n);assert.equal(localV2AmountOut(1,100000,200000),1n);assert.throws(()=>localV2AmountOut(1,0,2),/INVALID/);});
 test('observed pool authentication retains urgent priority and research stays in background',()=>{const p={id:'PANCAKE_SMART',authenticatesObservedPools:true},r={paper:true,candidatePools:[{}]};assert.equal(candidatePriority(p,r,2),2);assert.equal(candidatePriority(p,r,-1),-1);});
+test('restart restores only authenticated quote tuples and factory proofs without RPC',async()=>{
+ const p={address:'0x'+'12'.repeat(20),token0:BSC.wbnb,token1:'0x'+'34'.repeat(20),factory:BSC.factory,fee:null,adapter:'PANCAKE_V2'},rpc={cache:new Map(),contract:()=>{throw Error('no rediscovery allowed');}},store={setting:async()=>null,all:async sql=>{assert.match(sql,/PAPER_DEX_PATH/);return [{hops:JSON.stringify([p,{...p,address:'0x'+'45'.repeat(20),factory:'0x'+'99'.repeat(20)}])}];}};
+ await restoreRouteMetadata(rpc,store);assert.equal((await new PaperDexRoute(rpc).pool({address:p.address,topic:V2_SWAP})).token1,p.token1);assert.equal(rpc.authenticatedPoolCache.size,2);
+ const t=rpc.cache.get(p.address+':'+PAIR.encodeFunctionData('token0'));assert.equal(PAIR.decodeFunctionResult('token0',t.value)[0].toLowerCase(),BSC.wbnb);
+ const pair=rpc.cache.get(BSC.factory+':'+FACTORY.encodeFunctionData('getPair',[p.token1,p.token0]));assert.equal(FACTORY.decodeFunctionResult('getPair',pair.value)[0].toLowerCase(),p.address);assert.ok([...rpc.cache.keys()].every(k=>!k.endsWith(PAIR.encodeFunctionData('getReserves'))));
+});
+
+test('Flap first RPC still rejects a wrong chain after removing redundant verification',async()=>{const {BscRpc}=await import('../runtime/copy/rpc.mjs'),{FlapRoute}=await import('../runtime/copy/flap.mjs');const methods=[],rpc=new BscRpc([{id:'wrong',enabled:true,http_url:'https://rpc.invalid'}],{fetcher:async(_u,o)=>{methods.push(JSON.parse(o.body).method);return {ok:true,status:200,json:async()=>({result:'0x1'})};}});await assert.rejects(new FlapRoute(rpc).quote({side:'BUY',token:'0x'+'34'.repeat(20),amount:'100000',slippageBps:100}),/WRONG_CHAIN_ID/);assert.deepEqual(methods,['eth_chainId']);});
