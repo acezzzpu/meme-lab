@@ -1,0 +1,22 @@
+import {resolve} from 'node:path';
+import {sqliteDriver} from '../runtime/sqlite.mjs';
+import {Store} from '../core/store.mjs';
+import {BscRpc} from '../runtime/copy/rpc.mjs';
+import {freeBscProviders} from '../runtime/copy/provider-config.mjs';
+import {ShadowReadBudget} from '../runtime/copy/shadow-compare.mjs';
+import {validateNetBuy,atomicShadowTemplate} from '../runtime/copy/shadow-validation.mjs';
+import {validateSeededSell} from '../runtime/copy/shadow-sell-validation.mjs';
+import {decode} from '../core/copy/common.mjs';
+const hash=process.argv[2];if(!/^0x[0-9a-f]{64}$/.test(hash??''))throw Error('EXISTING_TARGET_HASH_REQUIRED');
+const db=sqliteDriver(resolve(process.env.DATA_DIR??'data','meme-lab.sqlite')),store=new Store(db),config=await store.setting('copy_config');
+if(config.live_enabled)throw Error('READ_ONLY_DIAGNOSTIC_REQUIRES_LIVE_DISABLED');
+const row=await store.get("SELECT a.data FROM copy_actions a JOIN copy_events e ON e.id=a.event_id WHERE e.hash=? AND a.mode='PAPER' AND a.state='FILLED'",hash);if(!row)throw Error('EXISTING_FILLED_PAPER_REFERENCE_REQUIRED');
+const a=decode(row.data),event=a.event??decode((await store.get('SELECT data FROM copy_events WHERE hash=?',hash)).data);
+const providers=freeBscProviders().filter(p=>['free-bnb','free-publicnode'].includes(p.id)).sort((a,b)=>Number(b.id==='free-bnb')-Number(a.id==='free-bnb'));
+const e={store,rpc:new BscRpc(providers),shadowBudget:new ShadowReadBudget({limit:12})};
+// One explicit bounded research run; no watcher, signer, action or ledger writer.
+e.shadowBudget.take();await e.rpc.request(providers[0],'eth_chainId',[]);
+const result=event.side==='BUY'?await validateNetBuy(e,event,a.quote,config):await validateSeededSell(e,event,await atomicShadowTemplate(e,a.quote,config),config);
+result.source='RENDER_EXISTING_TARGET_EVENT_CURRENT_STATE_RESEARCH';result.production_commit=process.env.RENDER_GIT_COMMIT??null;
+result.rpc_reads=e.shadowBudget.starts.length;const key='copy_shadow_validation:'+Date.now()+':'+hash;await store.set(key,result);
+console.log(JSON.stringify({key,status:result.status,side:event.side,hash,token:event.token,simulation:result.simulation,failure:result.failure,total_ms:result.total_ms,rpc_reads:result.rpc_reads}));db.close();
