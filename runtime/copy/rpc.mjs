@@ -63,6 +63,9 @@ export class BscRpc {
    const r=await abortable(this.fetcher(provider.http_url,{method:'POST',headers:{'Content-Type':'application/json'},body:encode({jsonrpc:'2.0',id:++this.sequence,method,params}),signal}),signal);httpStatus=r.status;
    if(r.status===429||r.status===503){const value=r.headers.get('retry-after');retryAfter=Math.min(60000,Math.max(3000,Number.isFinite(Number(value))?Number(value)*1000:Date.parse(value)-Date.now()||3000));}
    const data=await abortable(r.json().catch(()=>({})),signal);
+   // Render measured repeated 403 receipt denials on PublicNode. Suppress only
+   // this explicitly denied method briefly; retain its working head/block reads.
+   if(method==='eth_getTransactionReceipt'&&r.status===403&&/archive requests require a personal token/i.test(data.error?.message??''))this.unsupported.set(provider.id+':'+method,Date.now()+60000);
    check(r.ok,'RPC_HTTP_'+r.status+': '+String(data.error?.message??'').slice(0,160));
    if(data.error&&(data.error.code===-32601||/not (available|supported)|method not found|method.*disabled/i.test(data.error.message??'')))this.unsupported.set(provider.id+':'+method,Date.now()+600000);
    if(data.error&&method==='debug_traceTransaction'&&(data.error.code===-32601||/not (available|supported)|method not found/i.test(data.error.message??'')))this.unsupported.set(provider.id+':'+method,Date.now()+600000);
@@ -79,6 +82,7 @@ export class BscRpc {
  async call(method,params=[],{timeout,provider}={}){
   if(provider)return this.request(provider,method,params,timeout);
   const active=this.providers.filter(p=>!['archive','benchmark'].includes(p.role));
+  if(method==='eth_getTransactionReceipt')active.sort((a,b)=>Number(!!b.receipt_primary)-Number(!!a.receipt_primary));
   check(active.length,'BSC_PROVIDER_NOT_CONFIGURED');
   // No eager duplicate reads. A fallback starts only after a failure or a slow
   // primary. Each endpoint is attempted at most once per logical request.
@@ -103,3 +107,4 @@ export class BscRpc {
 }
 export async function tokenMetadata(rpc,token){const {ERC20}=await import('../../core/copy/common.mjs');const [[d],s]=await Promise.all([rpc.contract(token,ERC20,'decimals'),rpc.contract(token,ERC20,'symbol').catch(()=>[null])]);check(Number(d)<=36,'UNSUPPORTED_DECIMALS');return {decimals:Number(d),symbol:s[0]??token.slice(0,8)};}
 export const blockTag=n=>hex(n);
+
