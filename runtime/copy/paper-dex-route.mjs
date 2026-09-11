@@ -5,16 +5,19 @@ const UNI_QUOTER='0x78d78e420da98ad378d7799be8f4af69033eb077';
 // PAPER only: current quotes for independently authenticated pool paths. This
 // does not claim an atomic transaction, router calldata or transfer-tax success.
 export class PaperDexRoute {
- constructor(rpc){this.rpc=rpc;this.id='PAPER_DEX_PATH';this.cache=new Map();}
+ constructor(rpc){this.rpc=rpc;this.id='PAPER_DEX_PATH';this.cache=rpc.authenticatedPoolCache??=new Map();this.flights=rpc.poolFlights??=new Map();}
  async pool(hint){
-  const address=addr(hint.address),key=address+':'+hint.topic,cached=this.cache.get(key);if(cached)return cached;
+  const address=addr(hint.address),key=address+':'+hint.topic,cached=this.cache.get(key);if(cached)return cached;if(this.flights.has(key))return this.flights.get(key);
+  const work=this.loadPool(hint,key);this.flights.set(key,work);try{return await work;}finally{this.flights.delete(key);}
+ }
+ async loadPool(hint,key){const address=addr(hint.address);
   const [[a],[b],[f]]=await Promise.all(['token0','token1','factory'].map(m=>this.rpc.contract(address,PAIR,m)));
   const token0=addr(a),token1=addr(b),factory=addr(f);let fee=null,adapter,registered;
   if(factory===BSC.factory&&(!hint.topic||hint.topic===V2_SWAP)){adapter='PANCAKE_V2';[registered]=await this.rpc.contract(factory,FACTORY,'getPair',[token0,token1]);}
   else if(factory===UNI_FACTORY&&(!hint.topic||hint.topic===V3_SWAP)||factory===BSC.v3factory&&(!hint.topic||hint.topic===PANCAKE_V3_SWAP)){
    [fee]=await this.rpc.contract(address,PAIR,'fee');adapter=factory===UNI_FACTORY?'UNISWAP_V3':'PANCAKE_V3';[registered]=await this.rpc.contract(factory,V3FACTORY,'getPool',[token0,token1,fee]);
   }else throw Error('PAPER_POOL_FACTORY_UNSUPPORTED');
-  check(addr(registered)===address,'PAPER_POOL_NOT_REGISTERED');const p={address,token0,token1,factory,fee:fee===null?null:Number(fee),adapter};this.cache.set(key,p);if(this.cache.size>1000)this.cache.delete(this.cache.keys().next().value);return p;
+  check(addr(registered)===address,'PAPER_POOL_NOT_REGISTERED');const p={address,token0,token1,factory,fee:fee===null?null:Number(fee),adapter};this.cache.set(key,p);this.rpc.routeMetadataChanged?.();if(this.cache.size>1000)this.cache.delete(this.cache.keys().next().value);return p;
  }
  async quote({paper,side,token,amount,slippageBps,candidatePools=[]}){
   check(paper,'PAPER_PATH_NOT_LIVE_EXECUTABLE');check(candidatePools.length,'NO_PAPER_POOL_CANDIDATES');const start=performance.now();
