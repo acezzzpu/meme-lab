@@ -16,7 +16,7 @@ export async function runCopySelfTest(e){
  const events=(await e.store.all('SELECT * FROM copy_events')).map(r=>({...r,data:decode(r.data)}));
  const targets=await e.store.all('SELECT id,address FROM copy_targets');const addresses=new Map(targets.map(t=>[t.id,t.address]));
  const actual=events.filter(r=>r.status==='CONFIRMED'&&!r.data.history&&r.detected_at>=e.boot),actions=(await e.store.all("SELECT * FROM copy_actions WHERE mode='PAPER' AND state='FILLED'")).map(r=>({...r,data:decode(r.data)})).filter(r=>!r.data.event?.history&&r.created_at>=e.boot);
- add('TARGET_FILTER',actual.length>0&&actual.filter(r=>r.data.side).every(r=>r.data.from===addresses.get(r.target_id)),'Real confirmed sources must belong to the configured sender');
+ add('TARGET_FILTER',actual.some(r=>r.data.side)&&actual.filter(r=>r.data.side).every(r=>r.data.from===addresses.get(r.target_id)),'Real confirmed trade sources must belong to the configured sender');
  add('RECEIPT_FETCH',actual.length>0,'Requires at least one confirmed receipt');
  add('TRANSFER_DECODER',actual.some(r=>r.data.flows?.length>0),'Requires real decoded token movements');
  add('BUY_DECODER',actual.some(r=>r.data.side==='BUY'),'Requires a real observed BUY');
@@ -28,7 +28,8 @@ export async function runCopySelfTest(e){
  add('ZEROX_QUOTE',actions.some(r=>r.data.quote?.provider==='ZEROX_ALLOWANCE_HOLDER'),e.keys?.zeroEx?'No successful measured quote yet':'ZEROX_KEY_NOT_CONFIGURED',false);
  add('FOT_HANDLING',actions.some(r=>r.data.quote?.tax_classification==='BUY_SELL_TAX'),'Optional token-specific tax evidence; UNKNOWN is never zero tax',false);
  const ledger=await e.store.get("SELECT COUNT(*) n FROM copy_ledger WHERE mode='PAPER'"),positions=await e.store.all("SELECT quantity_raw,cost_raw FROM copy_positions WHERE mode='PAPER'");
- add('POSITION_RECONCILIATION',actions.length>0&&ledger.n===actions.length&&positions.every(p=>BigInt(p.quantity_raw)>=0n&&BigInt(p.cost_raw)>=0n),'One ledger fill per action; nonnegative inventory and cost');
+ const filled=await e.store.get("SELECT COUNT(*) n FROM copy_actions WHERE mode='PAPER' AND state='FILLED'");
+ add('POSITION_RECONCILIATION',filled.n>0&&ledger.n===filled.n&&positions.every(p=>BigInt(p.quantity_raw)>=0n&&BigInt(p.cost_raw)>=0n),'All persisted PAPER fills reconcile across restarts; nonnegative inventory and cost');
  const duplicate=await e.store.get('SELECT COUNT(*) n FROM (SELECT event_id,mode,COUNT(*) n FROM copy_actions GROUP BY event_id,mode HAVING n>1)');
  add('DUPLICATE_PROTECTION',actual.length>0&&duplicate.n===0,'Durable event/mode uniqueness');
  const failover=await testRateLimitFailover(e);add('RATE_LIMIT_FAILOVER',failover.passed,failover);const backfill=await e.store.setting('copy_backfill');add('BACKFILL_PAUSE',backfill?.live_quota_access===false,backfill??'No backfill budget evidence');
