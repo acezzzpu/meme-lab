@@ -64,7 +64,7 @@ test('route hint cache retains authenticated bridge when a later source trade ha
 });
 
 test('partial fill persists bridge pools and a fresh engine can close the remainder after SQLite reopen',async t=>{
- const folder=await mkdtemp(join(tmpdir(),'copy-pool-restart-'));let db=sqliteDriver(join(folder,'test.sqlite'));let store=new Store(db,{encryptionKey:KEY});await store.init();t.after(async()=>{db.close();await rm(folder,{recursive:true,force:true});});
+ const folder=await mkdtemp(join(tmpdir(),'copy-pool-restart-'));let db=sqliteDriver(join(folder,'test.sqlite'));let store=new Store(db,{encryptionKey:KEY});await store.init();t.after(async()=>{db.close();await rm(folder,{recursive:true,force:true,maxRetries:3,retryDelay:100});});
  const c={...await store.setting('copy_config'),enabled:true,execution_wallet:WALLET};const tc={...targetDefaults,mode:'PAPER',exit_mode:'FULL_MIRROR',min_liquidity_usd:0,max_signal_age_ms:120000};await store.set('copy_config',c);await store.set('engine_desired','RUNNING');await store.run('UPDATE copy_targets SET config=? WHERE id=?',encode(tc),TARGET);let f={store,db,c,tc};
  const buy=await action(f,{id:'buy',event:{pools:[BRIDGE,ASSET_POOL]}});assert.equal(await applyFill(store,buy,{inputRaw:'2000000000000000',outputRaw:'1000000',feeRaw:'1'}),true);
  const partial=await action(f,{id:'partial',side:'SELL',amount:'300000',event:{pools:[ASSET_POOL],quantity_raw:'300000'}});assert.equal(await applyFill(store,partial,{inputRaw:'300000',outputRaw:'900000000000000',feeRaw:'1'}),true);let p=await store.get('SELECT * FROM copy_positions');assert.equal(p.quantity_raw,'700000');assert.equal(decode(p.data).pools.length,2);

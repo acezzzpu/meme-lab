@@ -1,4 +1,5 @@
 import {addr,check,cleanError,decode,encode,hex} from '../../core/copy/common.mjs';
+import {beginLiveCapture,checkLiveCapture} from './live-capture.mjs';
 
 // Two independent read lanes; only the short SQLite commits are serialized.
 // Execution/signing remains in CopyEngine.work(), with its existing fences.
@@ -13,6 +14,13 @@ export function runLoop(engine,work,idleMs){
 export async function observeHead(e,o){
  const height=Number(BigInt(o.event.number)),hash=o.event.hash??null;
  check(Number.isSafeInteger(height)&&height>0,'INVALID_BLOCK_HEIGHT');
+ if(!e.liveWindow){
+  // Old recovery checkpoints are retained for explicit history work. A fresh
+  // live session never walks the entire pre-existing historical hole.
+  e.liveWindow={boot:e.boot,from_block:height,started_at:o.received_at};
+  await e.store.set('copy_live_window',e.liveWindow);await e.store.set('copy_live_cursor',height-1);
+  if(e.rpc?.telemetry&&e.targets?.length)beginLiveCapture(e,height-1).catch(error=>e.report('CAPTURE_AUDIT',cleanError(error)));
+ }
  const pair=height+':'+(hash??'http');if(e.seenHeads.has(pair))return;
  // Mark seen only after durable enqueue: a failed write must remain retryable.
  const prior=await e.store.get('SELECT hash FROM copy_blocks WHERE number=?',height);
@@ -40,14 +48,16 @@ export async function readBlock(e,p){
  try{return await read;}catch(error){e.blockReads.delete(key);throw error;}
 }
 
-async function recoverGaps(e,head){
- const cursor=await e.store.setting('copy_cursor');if(cursor===null||head<=cursor)return;
+async function recoverGaps(e,head,historical=false){
+ const live=!historical&&!e.options?.historicalOnly&&e.liveWindow;
+ const cursor=await e.store.setting(live?'copy_live_cursor':'copy_cursor');if(cursor===null||head<=cursor)return;
+ if(!live&&!e.options?.historicalOnly&&!historical)return;
  for(let n=cursor+1;n<=Math.min(head,cursor+32);n++){
   if(await e.store.get('SELECT number FROM copy_blocks WHERE number=?',n))continue;
   // Also recognize 0.3.0 aliases; do not duplicate an already scheduled read.
   const existing=await e.store.get("SELECT id,state,available_at FROM copy_jobs WHERE kind='BLOCK' AND json_extract(payload,'$.height')=? ORDER BY CASE state WHEN 'RUNNING' THEN 0 WHEN 'QUEUED' THEN 1 ELSE 2 END LIMIT 1",n);
   if(existing){if(['FAILED','DONE'].includes(existing.state))await e.store.run("UPDATE copy_jobs SET state='QUEUED' WHERE id=? AND state IN ('FAILED','DONE')",existing.id);continue;}
-  await e.job('head:'+n,'BLOCK',{height:n,received_at:Date.now(),method:'RECOVERY',history:true});
+  await e.job('head:'+n,'BLOCK',{height:n,received_at:Date.now(),clock_boot:e.boot,method:live?'LIVE_GAP_RECOVERY':'RECOVERY',history:!live});
  }
 }
 
@@ -66,7 +76,7 @@ export async function commitBlock(e,p,b){
   for(const tx of b.transactions){if(typeof tx==='string')continue;const target=e.targets.find(t=>t.address===addr(tx.from));if(!target)continue;
    statements.push(["INSERT INTO copy_source_transactions VALUES (56,?,'INCLUDED_AWAITING_RECEIPT',?,?,?) ON CONFLICT(chain_id,hash) DO UPDATE SET status=CASE WHEN copy_source_transactions.status='PENDING' THEN excluded.status ELSE copy_source_transactions.status END,last_seen_at=excluded.last_seen_at",[tx.hash,Date.now(),Date.now(),encode({tx,source:p.method??'BLOCK',block_number:p.height,receipt_status:'AWAITING_RECEIPT'})]]);
    const targetAt=Number(BigInt(b.timestamp))*1000,expired=Date.now()-targetAt>(decode(target.config).max_signal_age_ms??2000);
-   const payload={target:target.id,hash:tx.hash,tx,block:header,provider:p.provider,received_at:Date.now(),received_mono:performance.now(),clock_boot:e.boot,head_received_at:p.received_at,method:p.method,history:!!p.history,history_reason:p.history?'RECOVERY':null,late:expired,late_reason:expired?'EXPIRED_AT_BLOCK_READ':null,target_at:targetAt,block_number:p.height,tx_index:Number(BigInt(tx.transactionIndex??0))};
+   const payload={target:target.id,hash:tx.hash,tx,block:header,provider:p.provider,received_at:Date.now(),received_mono:performance.now(),clock_boot:e.boot,head_received_at:p.received_at,head_received_mono:p.received_mono,method:p.method,history:!!p.history,history_reason:p.history?'RECOVERY':null,late:expired,late_reason:expired?'EXPIRED_AT_BLOCK_READ':null,target_at:targetAt,block_number:p.height,tx_index:Number(BigInt(tx.transactionIndex??0))};
    if(p.clock_boot===e.boot&&Number.isFinite(p.received_mono))await e.sample('BLOCK_DETECTION_MS',performance.now()-p.received_mono,null,p.provider??'rpc',{hash:tx.hash,clock:'MONOTONIC_LOCAL',meaning:'Head notification to target transaction identified'});statements.push(["INSERT OR IGNORE INTO copy_jobs VALUES (?,?,'QUEUED',?,?,0,NULL)",['tx:'+target.id+':'+tx.hash,'TARGET',encode(payload),Date.now()]]);
   }
   // The block is complete iff all of its target jobs were committed atomically.
@@ -76,18 +86,20 @@ export async function commitBlock(e,p,b){
  const cursor=await e.store.setting('copy_cursor');let advanced=cursor===null?p.height:cursor;
  while(await e.store.get('SELECT number FROM copy_blocks WHERE number=?',advanced+1))advanced++;
  if(advanced!==cursor)await e.store.set('copy_cursor',advanced);
+ if(e.liveWindow){let liveCursor=await e.store.setting('copy_live_cursor');while(await e.store.get('SELECT number FROM copy_blocks WHERE number=?',liveCursor+1))liveCursor++;await e.store.set('copy_live_cursor',liveCursor);}
  // Retire legacy aliases only for this exact hash. Contradicting hashes survive.
  await e.store.run("UPDATE copy_jobs SET state='DONE',error=NULL WHERE kind='BLOCK' AND state='QUEUED' AND json_extract(payload,'$.height')=? AND (json_extract(payload,'$.expected_hash') IS NULL OR json_extract(payload,'$.expected_hash')=?) AND (id IN (?,?,?) OR json_extract(payload,'$.expected_hash')=?)",p.height,b.hash,'head:'+p.height,'head:'+p.height+':http','head:'+p.height+':'+b.hash,b.hash);
  const head=Math.max(p.height,await e.store.setting('copy_observed_head')??0,(await e.store.get('SELECT MAX(number) n FROM copy_blocks')).n??0);
- await recoverGaps(e,head);
+ await recoverGaps(e,head,!!p.history);
 }
 
 export async function blockWork(e,recovery){
  if(e.closed||!e.rpc)return false;
  const config=await e.store.setting('copy_config');
  if(!config.enabled||await e.store.setting('engine_desired')!=='RUNNING'||await e.store.setting('copy_reconciliation_required'))return false;
+ if(recovery&&(!e.options?.enableHistoryWorker||!e.rpc.providers?.some(p=>p.history_dedicated)))return false;
  const filter=recovery?"AND (json_extract(payload,'$.history')=1 OR COALESCE(json_extract(payload,'$.received_at'),0)<?)":"AND json_extract(payload,'$.history') IS NOT 1 AND COALESCE(json_extract(payload,'$.received_at'),0)>=?";
- const order=recovery?"CASE WHEN json_extract(payload,'$.history')=1 THEN 0 ELSE 1 END,json_extract(payload,'$.height') ASC":"json_extract(payload,'$.height') DESC";
+ const order=recovery?"CASE WHEN json_extract(payload,'$.history')=1 THEN 0 ELSE 1 END,json_extract(payload,'$.height') ASC":"json_extract(payload,'$.height') ASC";
  const job=await e.store.get(`SELECT * FROM copy_jobs WHERE kind='BLOCK' AND state='QUEUED' AND available_at<=? ${filter} ORDER BY ${order},available_at LIMIT 1`,Date.now(),e.options.liveBoot??e.boot??0);
  if(!job)return false;
  const claimed=await e.store.run("UPDATE copy_jobs SET state='RUNNING',attempts=attempts+1 WHERE id=? AND state='QUEUED'",job.id);if(!claimed.changes)return false;
@@ -100,7 +112,7 @@ export async function blockWork(e,recovery){
 export async function writeHeartbeat(e){
  const c=await e.store.setting('copy_config'),health=(await e.store.all('SELECT * FROM copy_provider_health')).map(h=>({...h,data:decode(h.data)}));
  const seen=[await e.store.setting('copy_observed_head'),...health.map(h=>h.data.block)].filter(n=>Number.isSafeInteger(n)&&n>0);
- const head=seen.length?Math.max(...seen):null,cursor=await e.store.setting('copy_cursor');
+ const head=seen.length?Math.max(...seen):null,cursor=await e.store.setting('copy_live_cursor')??await e.store.setting('copy_cursor');
  const latest=await e.store.get('SELECT number,at FROM copy_blocks ORDER BY number DESC LIMIT 1');
  const lag=head!==null&&cursor!==null?Math.max(0,head-cursor):null;
  const scanned=lag===null?0:(await e.store.get('SELECT COUNT(*) n FROM copy_blocks WHERE number>? AND number<=?',cursor,head)).n;
@@ -110,6 +122,8 @@ export async function writeHeartbeat(e){
  const headLag=head!==null&&latest?Math.max(0,head-latest.number):null;
  const staleRead=!latest||Date.now()-latest.at>15000;
  const status=await e.store.setting('copy_reconciliation_required')?'RECONCILIATION_REQUIRED':!active?'STOPPED':!connected?'CONNECTING':staleRead?'DATA_STALE':headLag>3?'LAGGING':lag>3?'RECOVERING':'WATCHING';
- await e.store.set('copy_runtime',{status,version:'0.4.1',at:Date.now(),boot_at:e.boot,uptime_ms:Date.now()-e.boot,cursor,observed_head:head,latest_scanned_block:latest?.number??null,last_scanned_at:latest?.at??null,block_lag:lag,head_lag:headLag,missing_blocks:lag===null?null:Math.max(0,lag-scanned),queue,pending_jobs:queue.filter(q=>q.state==='QUEUED').reduce((n,q)=>n+q.n,0),rpc_budget:e.rpc?.status?.()??[],last_rpc:e.rpc?.metrics.slice(-16)??[]});
+ if(e.telemetry&&Date.now()-(e.lastTelemetry??0)>5000){e.lastTelemetry=Date.now();const telemetry=e.telemetry.snapshot(e.rpc.providers);await e.store.set('copy_rpc_telemetry',telemetry);await e.store.set('copy_backfill',{status:!e.historyWorker?'PAUSED':'SEPARATE_QUOTA_ONLY',reason:!e.options.enableHistoryWorker?'DISABLED_FOR_FREE_BASELINE':!e.historyWorker?'DEDICATED_ARCHIVE_QUOTA_REQUIRED':'EXPLICIT_DEDICATED_ARCHIVE',live_quota_access:false});if(Date.now()-(e.lastTelemetryLog??0)>60000){e.lastTelemetryLog=Date.now();await e.report('RPC_USAGE','BNB RPC usage',{providers:telemetry.providers,by_method:telemetry.by_method,cache:telemetry.cache});}}
+ await e.store.set('copy_runtime',{status,version:'0.6.0-bnb-free-budget',at:Date.now(),boot_at:e.boot,uptime_ms:Date.now()-e.boot,cursor,observed_head:head,latest_scanned_block:latest?.number??null,last_scanned_at:latest?.at??null,block_lag:lag,head_lag:headLag,missing_blocks:lag===null?null:Math.max(0,lag-scanned),queue,pending_jobs:queue.filter(q=>q.state==='QUEUED').reduce((n,q)=>n+q.n,0),live_window:e.liveWindow??null,historical_cursor:await e.store.setting('copy_cursor'),rpc_failover:e.rpc?.failover??null,rpc_budget:e.rpc?.status?.()??[],last_rpc:e.rpc?.metrics.slice(-16)??[]});
  if(c.execution_wallet&&!e.walletBusy&&Date.now()-(e.lastWallet??0)>10000){e.walletBusy=true;e.lastWallet=Date.now();e.wallet().catch(error=>e.report('WALLET',cleanError(error))).finally(()=>e.walletBusy=false);}
+ if(e.captureBaseline&&!e.captureBusy&&Date.now()-(e.lastCaptureAudit??0)>60000){e.captureBusy=true;e.lastCaptureAudit=Date.now();checkLiveCapture(e).catch(error=>e.report('CAPTURE_AUDIT',cleanError(error))).finally(()=>e.captureBusy=false);}
 }

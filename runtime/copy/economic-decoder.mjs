@@ -1,5 +1,5 @@
 import {BSC,ERC20,TRANSFER,V2_SWAP,V3_SWAP,PANCAKE_V3_SWAP,addr,hex,transferDeltas,sellFraction,cleanError} from '../../core/copy/common.mjs';
-import {hasFlapEvent,FLAP_PORTAL} from './flap.mjs';
+import {hasFlapEvent,flapEvidence,FLAP_PORTAL} from './flap.mjs';
 import {tokenMetadata} from './rpc.mjs';
 
 // Receipt-first economic classification. Router identity never decides whether
@@ -40,10 +40,10 @@ export async function decodeEconomicTarget(rpc,tx,receipt,block,target,{metadata
   }
  }
  Object.assign(out,await metadataTask);
- if(!out.quote_raw)return {...out,reason:delta<0n?'NATIVE_SELL_PROCEEDS_UNAVAILABLE':'NO_OPPOSING_QUOTE_FLOW'};
+ if(!out.quote_raw){const attributed=flapEvidence(tx,receipt,block,wallet,token,delta);if(!attributed)return {...out,reason:delta<0n?'NATIVE_SELL_PROCEEDS_UNAVAILABLE':'NO_OPPOSING_QUOTE_FLOW'};Object.assign(out,{protocol:'FLAP',quote_token:BSC.wbnb,quote_raw:null,quote_evidence_method:attributed.attribution,quote_estimate:'UNKNOWN_TARGET_NATIVE_PROCEEDS',flap:attributed});}
  if(hasFlapEvent(receipt))out.pools=[{address:FLAP_PORTAL,adapter:'FLAP_PORTAL'}];
  out.side=delta>0n?'BUY':'SELL';out.kind=out.side;
- if(Number.isInteger(out.decimals))out.price_quote=Number(out.quote_raw)/1e18/(Number(amount)/10**out.decimals);
+ if(Number.isInteger(out.decimals)&&out.quote_raw)out.price_quote=Number(out.quote_raw)/1e18/(Number(amount)/10**out.decimals);
  if(delta<0n){
   try{
    const [[balance],logs]=await Promise.all([rpc.contract(token,ERC20,'balanceOf',[wallet],hex(historical?height-1:height)),rpc.call('eth_getLogs',[{address:token,fromBlock:hex(height),toBlock:hex(height),topics:[TRANSFER]}])]);
@@ -52,5 +52,6 @@ export async function decodeEconomicTarget(rpc,tx,receipt,block,target,{metadata
    out.target_balance_before=String(before);out.sold_fraction=sellFraction(before,amount);out.exit_evidence=historical?'PRIOR_BLOCK_BALANCE_PLUS_PRECEDING_TRANSFERS':'CURRENT_RECEIPT_BLOCK_BALANCE_MINUS_CURRENT_AND_SUBSEQUENT_TRANSFERS';out.kind=amount===before?'SELL':'PARTIAL_SELL';out.full_exit=amount===before;
   }catch(e){out.exit_evidence='TARGET_BALANCE_BEFORE_UNAVAILABLE';out.exit_evidence_error=cleanError(e);}
  }else if(position?.closed_at)out.kind='REENTRY';
+ out.field_evidence={quantity_raw:'EXACT_FROM_TRANSFER_LOG',decimals:Number.isInteger(out.decimals)?'EXACT_FROM_CONTRACT':'UNKNOWN',gas_raw:'DERIVED_RECEIPT_GAS_USED_X_GAS_PRICE',tx_value:'EXACT_FROM_TRANSACTION',quote_raw:out.quote_estimate?'ESTIMATED_NO_INTERNAL_TRACE':out.quote_raw?'EXACT_FROM_TRANSFER_LOG':'UNKNOWN',target_balance_before:out.target_balance_before?'DERIVED_BALANCE_AND_ORDERED_TRANSFER_LOGS':'UNKNOWN',sold_fraction:out.target_balance_before?'DERIVED_RAW_AMOUNT_RATIO':'UNKNOWN',target_at:'EXACT_BLOCK_TIMESTAMP_SECONDS',price_quote:Number.isFinite(out.price_quote)?out.quote_estimate?'ESTIMATED':'DERIVED':'UNKNOWN'};
  return out;
 }
