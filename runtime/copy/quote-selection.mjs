@@ -13,8 +13,9 @@ export async function selectQuote(providers,request,{rpc,live=false,priority=0,a
   timer=setTimeout(()=>fail('ROUTE_QUOTE_TIMEOUT'),Math.max(1,deadlineAt-Date.now()));
   providers.forEach((provider,i)=>{
    const run=async()=>{
+    const started=performance.now();attempts[i].quote_start=Date.now();
     const q=await provider.quote({...request,signal:controllers[i].signal});if(finished)return;
-    attempts[i]={provider:provider.id,status:'QUOTED',out_raw:q.out_raw,fee_raw:q.fee_raw,quote_ms:q.quote_ms,impact_pct:q.impact_pct};
+    attempts[i]={...attempts[i],provider:provider.id,status:'QUOTED',quote_end:Date.now(),measured_quote_ms:performance.now()-started,out_raw:q.out_raw,fee_raw:q.fee_raw,quote_ms:q.quote_ms,impact_pct:q.impact_pct};
     await onQuote(q);if(finished)return;
     if(live||!allowUnknownImpact)check(Number.isFinite(q.impact_pct),'IMPACT_UNKNOWN');check(!live||['PANCAKE_V2','PANCAKE_SMART'].includes(q.provider),'ROUTE_NOT_LIVE_VALIDATED');
     const eligible=await validate(q);if(finished)return;check(eligible,'ROUTE_POLICY_REJECTED');
@@ -22,7 +23,7 @@ export async function selectQuote(providers,request,{rpc,live=false,priority=0,a
     const evidence=snapshot('CANCELLED_AFTER_SELECTION');cancel();resolve({...eligible,selection:'FIRST_POLICY_COMPATIBLE',route_comparison:evidence,route_errors:evidence.filter(a=>a.status==='ERROR'||a.status==='INELIGIBLE')});
    };
    Promise.resolve().then(()=>rpc?.withContext?rpc.withContext({signal:controllers[i].signal,priority},run):run()).catch(error=>{
-    if(finished)return;attempts[i]={...attempts[i],status:attempts[i].status==='QUOTED'?'INELIGIBLE':'ERROR',error:cleanError(error)};
+    if(finished)return;attempts[i]={...attempts[i],status:attempts[i].status==='QUOTED'?'INELIGIBLE':'ERROR',error:cleanError(error),quote_end:Date.now()};
    }).finally(()=>{remaining--;if(!remaining&&!finished)fail('NO_EXECUTABLE_ROUTE');});
   });
  });

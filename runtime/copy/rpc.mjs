@@ -6,7 +6,7 @@ function abortable(task,signal){
  return new Promise((resolve,reject)=>{const abort=()=>reject(signal.reason);signal.addEventListener('abort',abort,{once:true});Promise.resolve(task).then(resolve,reject).finally(()=>signal.removeEventListener('abort',abort));});
 }
 export class BscRpc {
- constructor(providers,{timeout=4000,fetcher=fetch,maxConcurrent=4,hedgeMs=350,telemetry=new RpcTelemetry(),pipeline='LIVE_TARGET_PIPELINE'}={}){this.providers=providers.filter(p=>p.enabled);this.timeout=timeout;this.fetcher=fetcher;this.hedgeMs=hedgeMs;this.telemetry=telemetry;this.pipeline=pipeline;this.cache=new Map();this.cacheFlights=new Map();this.maxConcurrent=Math.max(2,maxConcurrent);this.sequence=0;this.verified=new Set();this.verifying=new Map();this.cooldown=new Map();this.failures=new Map();this.unsupported=new Map();this.slots=new Map();this.context=new AsyncLocalStorage();this.metrics=[];this.failover={attempts:0,successes:0,last:null};}
+ constructor(providers,{timeout=4000,fetcher=fetch,maxConcurrent=4,hedgeMs=350,telemetry=new RpcTelemetry(),pipeline='LIVE_TARGET_PIPELINE'}={}){this.providers=providers.filter(p=>p.enabled);this.timeout=timeout;this.fetcher=fetcher;this.hedgeMs=hedgeMs;this.telemetry=telemetry;this.pipeline=pipeline;this.cache=new Map();this.cacheFlights=new Map();this.maxConcurrent=Math.max(2,maxConcurrent);this.sequence=0;this.verified=new Set();this.verifying=new Map();this.cooldown=new Map();this.failures=new Map();this.unsupported=new Map();this.slots=new Map();this.context=new AsyncLocalStorage();this.metrics=[];this.failover={attempts:0,successes:0,last:null};this.telemetry.failover=this.failover;}
  withContext(options,work){return this.context.run({...this.context.getStore(),...options},work);}
  acquire(id,priority,signal){
   let state=this.slots.get(id);if(!state){const rps=this.providers.find(p=>p.id===id)?.requests_per_second;state={active:0,background:0,queue:[],interval:Number.isFinite(rps)&&rps>0?1000/rps:0,nextStart:0,timer:null};this.slots.set(id,state);}
@@ -56,7 +56,7 @@ export class BscRpc {
   signal.throwIfAborted();check(Date.now()>=(this.cooldown.get(provider.id)??0),'RPC_BACKOFF');
   check(Date.now()>=(this.unsupported.get(provider.id+':'+method)??0),'RPC_METHOD_UNAVAILABLE_CACHED: '+method);
   const started=performance.now(),priority=context.priority??(method==='debug_traceTransaction'?-1:0);const release=await this.acquire(provider.id,priority,signal);
-  let retryAfter=0,httpStatus=0,sent=false;
+  const wireStarted=performance.now();let retryAfter=0,httpStatus=0,sent=false,outcomeStatus="OK",outcomeError=null;
   try{
    signal.throwIfAborted();check(Date.now()>=(this.cooldown.get(provider.id)??0),'RPC_BACKOFF');check(Date.now()>=(this.unsupported.get(provider.id+':'+method)??0),'RPC_METHOD_UNAVAILABLE_CACHED: '+method);
    sent=true;this.telemetry.add(provider.id,method,{pipeline,units:method.startsWith('debug_')?(provider.credit_unit??0)*2:provider.credit_unit??0});
@@ -70,11 +70,11 @@ export class BscRpc {
    if(method==='eth_chainId'){check(Number(BigInt(data.result))===56,'WRONG_CHAIN_ID');this.verified.add(provider.id);}
    this.failures.set(provider.id,0);this.metrics.push({provider:provider.id,method,at:Date.now(),duration_ms:performance.now()-started,status:'OK'});return data.result;
   }catch(e){
-   const cancelled=!!context.signal?.aborted,error=cleanError(e);
+   const cancelled=!!context.signal?.aborted,error=cleanError(e);outcomeStatus=cancelled?"CANCELLED":"ERROR";outcomeError=error;
    if(!cancelled)this.degrade(provider,error,retryAfter);
    if(sent)this.telemetry.outcome(provider.id,method,{pipeline,error,cancelled,status:httpStatus});
    this.metrics.push({provider:provider.id,method,at:Date.now(),duration_ms:performance.now()-started,status:cancelled?'CANCELLED':'ERROR',error});throw e;
-  }finally{release();if(this.metrics.length>300)this.metrics.splice(0,this.metrics.length-300);}
+  }finally{if(sent)this.telemetry.timing(provider.id,method,{pipeline,duration_ms:performance.now()-wireStarted,queue_ms:wireStarted-started,status:outcomeStatus,error:outcomeError});release();if(this.metrics.length>300)this.metrics.splice(0,this.metrics.length-300);}
  }
  async call(method,params=[],{timeout,provider}={}){
   if(provider)return this.request(provider,method,params,timeout);

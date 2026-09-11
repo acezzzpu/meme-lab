@@ -26,7 +26,7 @@ export async function observePending(e,o){
  const tx=o.event,target=e.targets.find(t=>tx.from&&addr(tx.from)===t.address);if(!target)return;
  const mono=o.received_mono??performance.now(),wall=o.received_at??Date.now();e.eventClocks??=new Map();
  if(!e.eventClocks.has(tx.hash))e.eventClocks.set(tx.hash,{boot:e.boot,mono,wall,source:'MEMPOOL'});
- const intent=pendingIntent(tx,target.address);intent.created_at=Date.now();intent.provisional_decode_done_at=Date.now();intent.pending_received_at=wall;intent.provisional_decode_ms=performance.now()-mono;
+ const intent=pendingIntent(tx,target.address);intent.created_at=Date.now();intent.provisional_decode_done_at=Date.now();intent.pending_received_at=wall;intent.pending_received_mono=mono;intent.clock_boot=e.boot;intent.provisional_decode_ms=performance.now()-mono;
  await e.store.run("INSERT INTO copy_source_transactions(chain_id,hash,status,first_seen_at,last_seen_at,data) VALUES (56,?,'PENDING',?,?,?) ON CONFLICT(chain_id,hash) DO UPDATE SET last_seen_at=excluded.last_seen_at",tx.hash,wall,Date.now(),encode({tx,source:'MEMPOOL',provider:o.provider}));
  const inserted=await e.store.run("INSERT OR IGNORE INTO copy_intents(chain_id,hash,target_id,status,data,created_at) VALUES (56,?,?,'PROVISIONAL',?,?)",tx.hash,target.id,encode(intent),intent.created_at);
  if(!inserted.changes)return;
