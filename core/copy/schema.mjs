@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS copy_positions(id TEXT PRIMARY KEY,target_id TEXT NOT
 CREATE TABLE IF NOT EXISTS copy_ledger(id TEXT PRIMARY KEY,action_id TEXT NOT NULL UNIQUE,mode TEXT NOT NULL,delta_raw TEXT NOT NULL,pnl_raw TEXT NOT NULL,fee_raw TEXT NOT NULL,at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS copy_provider_health(id TEXT PRIMARY KEY,status TEXT NOT NULL,data TEXT NOT NULL,updated_at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS copy_receipts(hash TEXT PRIMARY KEY,action_id TEXT NOT NULL,status TEXT NOT NULL,data TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_latency_profiles(event_id TEXT PRIMARY KEY,first_seen_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,data TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS copy_latency_profiles_time ON copy_latency_profiles(first_seen_at);
 CREATE TABLE IF NOT EXISTS copy_samples(id TEXT PRIMARY KEY,event_id TEXT,provider TEXT NOT NULL,kind TEXT NOT NULL,at INTEGER NOT NULL,duration_ms REAL,data TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS copy_samples_kind_time ON copy_samples(kind,at);
 CREATE TABLE IF NOT EXISTS copy_blocks(number INTEGER PRIMARY KEY,hash TEXT NOT NULL,parent_hash TEXT NOT NULL,at INTEGER NOT NULL);
