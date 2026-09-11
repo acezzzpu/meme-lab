@@ -28,9 +28,9 @@ export class BscRpc {
  }
  status(){return this.providers.map(p=>({provider:p.id,backoff_until:this.cooldown.get(p.id)??null,active:this.slots.get(p.id)?.active??0,queued:this.slots.get(p.id)?.queue.length??0,trace_unavailable_until:this.unsupported.get(p.id+':debug_traceTransaction')??null}));}
  degrade(provider,error,retryAfter=0){
-  if(!/timeout|timed out|abort|fetch failed|network|connection|RPC_HTTP_(429|5\d\d)|quota|daily.*limit|rate.?limit|request limit|WS_CONNECTION/i.test(error))return;
+  if(!/timeout|timed out|abort|fetch failed|network|connection|RPC_HTTP_(429|5\d\d)|quota|daily.*limit|rate.?limit|request limit|maximum API usage|ran out of cu|WS_CONNECTION/i.test(error))return;
   const count=(this.failures.get(provider.id)??0)+1;this.failures.set(provider.id,count);
-  const daily=/daily.*limit|quota.*exceed|credits.*exhaust/i.test(error),base=daily?3600000:count>=8?300000:Math.min(60000,1000*2**Math.min(count,6));
+  const daily=/daily.*limit|quota.*exceed|credits.*exhaust|ran out of cu/i.test(error),base=daily?3600000:count>=8?300000:Math.min(60000,1000*2**Math.min(count,6));
   this.cooldown.set(provider.id,Date.now()+Math.max(retryAfter,Math.ceil(base*(1+Math.random()*.2))));
  }
  async cached(key,ttl,work){
