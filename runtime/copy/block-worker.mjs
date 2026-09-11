@@ -12,6 +12,7 @@ export function runLoop(engine,work,idleMs){
 }
 
 export async function observeHead(e,o){
+ if(e.reorgActive||await e.store.setting('copy_reconciliation_required'))return;
  const height=Number(BigInt(o.event.number)),hash=o.event.hash??null;
  check(Number.isSafeInteger(height)&&height>0,'INVALID_BLOCK_HEIGHT');
  if(!e.liveWindow){
@@ -62,6 +63,7 @@ async function recoverGaps(e,head,historical=false){
 }
 
 export async function commitBlock(e,p,b){
+ if(!p.reorg_id&&(e.reorgActive||await e.store.setting('copy_reconciliation_required')))return;
  check(b,'BLOCK_NOT_AVAILABLE');
  if(!b.cached){
   check(Number(BigInt(b.number))===p.height&&typeof b.hash==='string'&&typeof b.parentHash==='string'&&Array.isArray(b.transactions),'INVALID_BLOCK_RESPONSE');
@@ -69,7 +71,7 @@ export async function commitBlock(e,p,b){
   const parent=await e.store.get('SELECT * FROM copy_blocks WHERE number=?',p.height-1);
   const child=await e.store.get('SELECT * FROM copy_blocks WHERE number=?',p.height+1);
   if(p.expected_hash&&p.expected_hash!==b.hash||prior&&prior.hash!==b.hash||parent&&parent.hash!==b.parentHash||child&&child.parent_hash!==b.hash){
-   await e.reorg(parent&&parent.hash!==b.parentHash?p.height-1:p.height,'BLOCK_HASH_CHANGED');return;
+   await e.reorg(parent&&parent.hash!==b.parentHash?p.height-1:p.height,'BLOCK_HASH_CHANGED',{height:p.height,notification_provider:p.provider,expected_hash:p.expected_hash,read_hash:b.hash,read_parent:b.parentHash,saved_hash:prior?.hash,parent_hash:parent?.hash,child_parent:child?.parent_hash});return;
   }
   const header={number:b.number,hash:b.hash,parentHash:b.parentHash,timestamp:b.timestamp,transactions:b.transactions.filter(tx=>typeof tx==='object'&&e.targets.some(t=>t.address===tx.from?.toLowerCase()||t.address===tx.to?.toLowerCase())).map(tx=>({from:tx.from,to:tx.to,hash:tx.hash}))};
   const statements=[];
@@ -77,7 +79,7 @@ export async function commitBlock(e,p,b){
    statements.push(["INSERT INTO copy_source_transactions VALUES (56,?,'INCLUDED_AWAITING_RECEIPT',?,?,?) ON CONFLICT(chain_id,hash) DO UPDATE SET status=CASE WHEN copy_source_transactions.status='PENDING' THEN excluded.status ELSE copy_source_transactions.status END,last_seen_at=excluded.last_seen_at",[tx.hash,Date.now(),Date.now(),encode({tx,source:p.method??'BLOCK',block_number:p.height,receipt_status:'AWAITING_RECEIPT'})]]);
    const targetAt=Number(BigInt(b.timestamp))*1000,expired=Date.now()-targetAt>(decode(target.config).max_signal_age_ms??2000);
    const payload={target:target.id,hash:tx.hash,tx,block:header,provider:p.provider,received_at:Date.now(),received_mono:performance.now(),clock_boot:e.boot,head_received_at:p.received_at,head_received_mono:p.received_mono,method:p.method,history:!!p.history,history_reason:p.history?'RECOVERY':null,late:expired,late_reason:expired?'EXPIRED_AT_BLOCK_READ':null,target_at:targetAt,block_number:p.height,tx_index:Number(BigInt(tx.transactionIndex??0))};
-   if(p.clock_boot===e.boot&&Number.isFinite(p.received_mono))await e.sample('BLOCK_DETECTION_MS',performance.now()-p.received_mono,null,p.provider??'rpc',{hash:tx.hash,clock:'MONOTONIC_LOCAL',meaning:'Head notification to target transaction identified'});statements.push(["INSERT OR IGNORE INTO copy_jobs VALUES (?,?,'QUEUED',?,?,0,NULL)",['tx:'+target.id+':'+tx.hash,'TARGET',encode(payload),Date.now()]]);
+   if(p.clock_boot===e.boot&&Number.isFinite(p.received_mono))await e.sample('BLOCK_DETECTION_MS',performance.now()-p.received_mono,null,p.provider??'rpc',{hash:tx.hash,clock:'MONOTONIC_LOCAL',meaning:'Head notification to target transaction identified'});statements.push(["INSERT INTO copy_jobs VALUES (?,?,'QUEUED',?,?,0,NULL) ON CONFLICT(id) DO UPDATE SET state='QUEUED',payload=excluded.payload,available_at=excluded.available_at,attempts=0,error=NULL WHERE copy_jobs.state='REORGED_OUT'",['tx:'+target.id+':'+tx.hash,'TARGET',encode({...payload,reorg_id:p.reorg_id??null}),Date.now()]]);
   }
   // The block is complete iff all of its target jobs were committed atomically.
   statements.push(['INSERT OR IGNORE INTO copy_blocks VALUES (?,?,?,?)',[p.height,b.hash,b.parentHash,Date.now()]]);
@@ -121,9 +123,10 @@ export async function writeHeartbeat(e){
  const active=c.enabled&&await e.store.setting('engine_desired')==='RUNNING';
  const headLag=head!==null&&latest?Math.max(0,head-latest.number):null;
  const staleRead=!latest||Date.now()-latest.at>15000;
- const status=await e.store.setting('copy_reconciliation_required')?'RECONCILIATION_REQUIRED':!active?'STOPPED':!connected?'CONNECTING':staleRead?'DATA_STALE':headLag>3?'LAGGING':lag>3?'RECOVERING':'WATCHING';
+ const reorg=await e.store.setting('copy_reconciliation_required'),lastReorg=await e.store.setting('copy_reorg_last');
+ const status=reorg?(reorg.final_status==='MANUAL_REVIEW'?'MANUAL_REVIEW':'RECONCILING'):!active?'STOPPED':!connected?'CONNECTING':staleRead?'DATA_STALE':headLag>3?'LAGGING':lag>3?'RECOVERING':'WATCHING';
  if(e.telemetry&&Date.now()-(e.lastTelemetry??0)>5000){e.lastTelemetry=Date.now();const telemetry=e.telemetry.snapshot(e.rpc.providers);await e.store.set('copy_rpc_telemetry',telemetry);await e.store.set('copy_backfill',{status:!e.historyWorker?'PAUSED':'SEPARATE_QUOTA_ONLY',reason:!e.options.enableHistoryWorker?'DISABLED_FOR_FREE_BASELINE':!e.historyWorker?'DEDICATED_ARCHIVE_QUOTA_REQUIRED':'EXPLICIT_DEDICATED_ARCHIVE',live_quota_access:false});if(Date.now()-(e.lastTelemetryLog??0)>60000){e.lastTelemetryLog=Date.now();await e.report('RPC_USAGE','BNB RPC usage',{providers:telemetry.providers,by_method:telemetry.by_method,cache:telemetry.cache});}}
- await e.store.set('copy_runtime',{status,version:'0.6.0-bnb-free-budget',at:Date.now(),boot_at:e.boot,uptime_ms:Date.now()-e.boot,cursor,observed_head:head,latest_scanned_block:latest?.number??null,last_scanned_at:latest?.at??null,block_lag:lag,head_lag:headLag,missing_blocks:lag===null?null:Math.max(0,lag-scanned),queue,pending_jobs:queue.filter(q=>q.state==='QUEUED').reduce((n,q)=>n+q.n,0),live_window:e.liveWindow??null,historical_cursor:await e.store.setting('copy_cursor'),rpc_failover:e.rpc?.failover??null,rpc_budget:e.rpc?.status?.()??[],last_rpc:e.rpc?.metrics.slice(-16)??[]});
- if(c.execution_wallet&&!e.walletBusy&&Date.now()-(e.lastWallet??0)>10000){e.walletBusy=true;e.lastWallet=Date.now();e.wallet().catch(error=>e.report('WALLET',cleanError(error))).finally(()=>e.walletBusy=false);}
- if(e.captureBaseline&&!e.captureBusy&&Date.now()-(e.lastCaptureAudit??0)>60000){e.captureBusy=true;e.lastCaptureAudit=Date.now();checkLiveCapture(e).catch(error=>e.report('CAPTURE_AUDIT',cleanError(error))).finally(()=>e.captureBusy=false);}
+ await e.store.set('copy_runtime',{status,reorg_status:reorg?(reorg.final_status??'RECONCILING'):lastReorg?.final_status??'NORMAL',unresolved_reorgs:(await e.store.get("SELECT COUNT(*) n FROM copy_reorg_incidents WHERE status<>'RECOVERED'")).n,version:'0.6.1-bnb-reorg-recovery',at:Date.now(),boot_at:e.boot,uptime_ms:Date.now()-e.boot,cursor,observed_head:head,latest_scanned_block:latest?.number??null,last_scanned_at:latest?.at??null,block_lag:lag,head_lag:headLag,missing_blocks:lag===null?null:Math.max(0,lag-scanned),queue,pending_jobs:queue.filter(q=>q.state==='QUEUED').reduce((n,q)=>n+q.n,0),live_window:e.liveWindow??null,historical_cursor:await e.store.setting('copy_cursor'),rpc_failover:e.rpc?.failover??null,rpc_budget:e.rpc?.status?.()??[],last_rpc:e.rpc?.metrics.slice(-16)??[]});
+ if(!reorg&&c.execution_wallet&&!e.walletBusy&&Date.now()-(e.lastWallet??0)>10000){e.walletBusy=true;e.lastWallet=Date.now();e.wallet().catch(error=>e.report('WALLET',cleanError(error))).finally(()=>e.walletBusy=false);}
+ if(!reorg&&e.captureBaseline&&!e.captureBusy&&Date.now()-(e.lastCaptureAudit??0)>60000){e.captureBusy=true;e.lastCaptureAudit=Date.now();checkLiveCapture(e).catch(error=>e.report('CAPTURE_AUDIT',cleanError(error))).finally(()=>e.captureBusy=false);}
 }

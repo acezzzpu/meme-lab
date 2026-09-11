@@ -14,6 +14,9 @@ CREATE INDEX IF NOT EXISTS copy_latency_profiles_time ON copy_latency_profiles(f
 CREATE TABLE IF NOT EXISTS copy_samples(id TEXT PRIMARY KEY,event_id TEXT,provider TEXT NOT NULL,kind TEXT NOT NULL,at INTEGER NOT NULL,duration_ms REAL,data TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS copy_samples_kind_time ON copy_samples(kind,at);
 CREATE TABLE IF NOT EXISTS copy_blocks(number INTEGER PRIMARY KEY,hash TEXT NOT NULL,parent_hash TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_reorg_incidents(id TEXT PRIMARY KEY,block_height INTEGER NOT NULL,status TEXT NOT NULL,detected_at INTEGER NOT NULL,data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS copy_reorg_archive(incident_id TEXT NOT NULL,table_name TEXT NOT NULL,row_key TEXT NOT NULL,status TEXT NOT NULL,block_hash TEXT,data TEXT NOT NULL,archived_at INTEGER NOT NULL,PRIMARY KEY(incident_id,table_name,row_key));
+CREATE TABLE IF NOT EXISTS copy_provider_quarantine(provider TEXT PRIMARY KEY,at INTEGER NOT NULL,until_at INTEGER NOT NULL,incident_id TEXT NOT NULL,data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS copy_jobs(id TEXT PRIMARY KEY,kind TEXT NOT NULL,state TEXT NOT NULL,payload TEXT NOT NULL,available_at INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,error TEXT);
 CREATE TABLE IF NOT EXISTS copy_source_transactions(chain_id INTEGER NOT NULL,hash TEXT NOT NULL,status TEXT NOT NULL,first_seen_at INTEGER NOT NULL,last_seen_at INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(chain_id,hash));
 CREATE TABLE IF NOT EXISTS copy_target_positions(target_id TEXT NOT NULL,token TEXT NOT NULL,quantity_raw TEXT,closed_at INTEGER,sequence INTEGER NOT NULL,updated_at INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(target_id,token));
