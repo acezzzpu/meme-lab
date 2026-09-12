@@ -16,12 +16,21 @@ export async function observeHead(e,o){
  const height=Number(BigInt(o.event.number)),hash=o.event.hash??null;
  check(Number.isSafeInteger(height)&&height>0,'INVALID_BLOCK_HEIGHT');
  if(!e.liveWindow){
-  // Old recovery checkpoints are retained for explicit history work. A fresh
-  // live session never walks the entire pre-existing historical hole.
-  e.liveWindow={boot:e.boot,from_block:height,started_at:o.received_at};
-  await e.store.set('copy_live_window',e.liveWindow);await e.store.set('copy_live_cursor',height-1);
+  // Resume the previous live frontier, not the legacy historical cursor.
+  // The cursor can be just before from_block on a crash during first enqueue.
+  const previous=await e.store.setting('copy_live_window'),saved=await e.store.setting('copy_live_cursor');
+  const resumable=previous&&Number.isSafeInteger(saved)&&saved>=previous.from_block-1;
+  const cursor=resumable?saved:height-1;
+  e.liveWindow={boot:e.boot,from_block:resumable?previous.from_block:height,started_at:resumable?previous.started_at:o.received_at};
+  await e.store.batch([
+   ["INSERT INTO settings VALUES ('copy_live_window',?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at",[encode(e.liveWindow),Date.now()]],
+   ["INSERT INTO settings VALUES ('copy_live_cursor',?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at",[encode(cursor),Date.now()]]
+  ]);
   if(e.rpc?.telemetry&&e.targets?.length)beginLiveCapture(e,height-1).catch(error=>e.report('CAPTURE_AUDIT',cleanError(error)));
  }
+ // Bounded (32 blocks) catch-up uses the same budgeted lanes as live reads.
+ // Run even on repeated HEADs so transient enqueue failures remain retryable.
+ await recoverGaps(e,height-1);
  const pair=height+':'+(hash??'http');if(e.seenHeads.has(pair))return;
  // Mark seen only after durable enqueue: a failed write must remain retryable.
  const prior=await e.store.get('SELECT hash FROM copy_blocks WHERE number=?',height);
@@ -56,8 +65,16 @@ async function recoverGaps(e,head,historical=false){
  for(let n=cursor+1;n<=Math.min(head,cursor+32);n++){
   if(await e.store.get('SELECT number FROM copy_blocks WHERE number=?',n))continue;
   // Also recognize 0.3.0 aliases; do not duplicate an already scheduled read.
-  const existing=await e.store.get("SELECT id,state,available_at FROM copy_jobs WHERE kind='BLOCK' AND json_extract(payload,'$.height')=? ORDER BY CASE state WHEN 'RUNNING' THEN 0 WHEN 'QUEUED' THEN 1 ELSE 2 END LIMIT 1",n);
-  if(existing){if(['FAILED','DONE'].includes(existing.state))await e.store.run("UPDATE copy_jobs SET state='QUEUED' WHERE id=? AND state IN ('FAILED','DONE')",existing.id);continue;}
+  const existing=await e.store.get("SELECT id,state,available_at,payload FROM copy_jobs WHERE kind='BLOCK' AND json_extract(payload,'$.height')=? ORDER BY CASE state WHEN 'RUNNING' THEN 0 WHEN 'QUEUED' THEN 1 ELSE 2 END LIMIT 1",n);
+  if(existing){
+   const old=decode(existing.payload);
+   if(live&&existing.state!=='RUNNING'&&old.clock_boot!==e.boot){
+    // A prior-boot job otherwise remains excluded by the live lane cutoff.
+    // Keep its expected hash for canonical verification and its stable ID.
+    await e.store.run("UPDATE copy_jobs SET state='QUEUED',payload=?,available_at=?,attempts=0,error=NULL WHERE id=? AND state<>'RUNNING'",encode({...old,height:n,received_at:Date.now(),clock_boot:e.boot,method:'LIVE_GAP_RECOVERY',history:false}),Date.now(),existing.id);
+   }else if(['FAILED','DONE'].includes(existing.state))await e.store.run("UPDATE copy_jobs SET state='QUEUED' WHERE id=? AND state IN ('FAILED','DONE')",existing.id);
+   continue;
+  }
   await e.job('head:'+n,'BLOCK',{height:n,received_at:Date.now(),clock_boot:e.boot,method:live?'LIVE_GAP_RECOVERY':'RECOVERY',history:!live});
  }
 }

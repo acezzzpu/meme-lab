@@ -1,3 +1,4 @@
+import {streamSse} from './sse.mjs';
 import http from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
@@ -33,17 +34,13 @@ const server=http.createServer(async(req,res)=>{const url=new URL(req.url,'http:
   const session=(req.headers.cookie??'').split(';').map(x=>x.trim()).find(x=>x.startsWith('meme_session='))?.slice(13);
   if(!bearer&&(!session||!(sessions.get(session)>Date.now())))return respond({error:'AUTH_REQUIRED'},401);
   if(url.pathname==='/api/stream'){
-   res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform','Connection':'keep-alive','X-Accel-Buffering':'no'});streams.add(res);res.flushHeaders();
-   let cursor=Math.max(0,Number(req.headers['last-event-id']??url.searchParams.get('after')??0)||0),busy=false,closed=false,lastSnapshot=0;
-   if(!cursor)cursor=Math.max(0,(await store.get('SELECT MAX(id) id FROM engine_events')).id-80);
-   const push=async()=>{if(busy||closed)return;busy=true;try{
-    if(!bearer&&sessions.get(session)<=Date.now()){res.end();return;}
-    const events=await eventsAfter(store,cursor);for(const event of events){res.write('id: '+event.id+'\nevent: engine\ndata: '+JSON.stringify(event)+'\n\n');cursor=event.id;}
-    if(Date.now()-lastSnapshot>=2000){lastSnapshot=Date.now();res.write('event: state\ndata: '+JSON.stringify(await state(store,options))+'\n\n');}
-    else if(!events.length)res.write(': keepalive\n\n');
-    if(res.writableLength>2*1024*1024)res.end();
-   }catch{res.end();}finally{busy=false;}};
-   await push();const timer=setInterval(push,500);res.on('close',()=>{closed=true;clearInterval(timer);streams.delete(res);});return;
+   streams.add(res);
+   await streamSse(req,res,{
+    initialCursor:Math.max(0,Number(req.headers['last-event-id']??url.searchParams.get('after')??0)||0),
+    loadCursor:async()=>Math.max(0,(await store.get('SELECT MAX(id) id FROM engine_events')).id-80),
+    eventsAfter:cursor=>eventsAfter(store,cursor),state:()=>state(store,options),
+    authorized:()=>bearer||sessions.get(session)>Date.now(),onClose:()=>streams.delete(res)
+   });return;
   }
   const path=url.pathname.replace('/api/lab/','');const fn=()=>handle(store,path,req.method,body,options);
   const urgent=['copy/stop','copy/emergency','copy/pause','stop','engine/start','engine/stop','engine/emergency','engine/pause','engine/resume'].includes(path);
