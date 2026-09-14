@@ -30,4 +30,4 @@ export const QUOTER_V3=new Interface(['function quoteExactInput(bytes path,uint2
 export const V3POOL=new Interface(['function slot0() view returns(uint160 sqrtPriceX96,int24 tick,uint16 observationIndex,uint16 observationCardinality,uint16 observationCardinalityNext,uint32 feeProtocol,bool unlocked)']);
 export function v3Path(tokens,fees){check(tokens.length===fees.length+1,'V3_PATH_LENGTH');return '0x'+tokens.map((token,i)=>addr(token).slice(2)+(i<fees.length?Number(fees[i]).toString(16).padStart(6,'0'):'')).join('');}
 
-export function mergePools(...lists){const pools=new Map();for(const list of lists)for(const p of list??[])if(p?.address)pools.set(addr(p.address),p);return [...pools.values()].slice(-40);}
+export function mergePools(...lists){const pools=new Map();for(const list of lists)for(const p of list??[])if(p?.address)pools.set(addr(p.address)+(p.pool_id?':'+p.pool_id:''),p);return [...pools.values()].slice(-40);}

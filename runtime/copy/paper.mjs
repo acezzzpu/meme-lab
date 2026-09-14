@@ -12,7 +12,7 @@ export async function processPaperAction(e,action){
  try{
   const {config:c,target:tc,event}=await assertCopyFence(e.store,action,{paperResearch:true});
   const usd=tc.size_mode==='FIXED_USD'?await e.freshPrice():null;
-  const amount=await calculateSize(e.store,action.mode,tc,action.target_id,event,c,usd);check(amount>0n,'ZERO_COPY_AMOUNT');
+  let amount=await calculateSize(e.store,action.mode,tc,action.target_id,event,c,usd);check(amount>0n,'ZERO_COPY_AMOUNT');
   const position=await e.store.get('SELECT data FROM copy_positions WHERE target_id=? AND token=? AND mode=? AND closed_at IS NULL',action.target_id,event.token,bucket(action.mode));
   const cash=await account(e.store,action.mode,c);check(action.side!=='BUY'||cash.cash-cash.reserved>=amount,'PAPER_BALANCE_INSUFFICIENT');
   const positionStateMs=performance.now()-start;positionStage=positionStateMs;const times={...(event.timings??{}),quotes_started_at:Date.now()};let firstQuoteMono=null;
@@ -26,6 +26,7 @@ export async function processPaperAction(e,action){
    const bps=taxes?.[action.side==='BUY'?'buyTaxBps':'sellTaxBps']??raw.portal_state?.[action.side==='BUY'?'buy_tax_bps':'sell_tax_bps'];
    const knownTax=bps!==null&&bps!==undefined&&/^\d+$/.test(String(bps))&&Number(bps)<=10000?Number(bps)/10000:null;
    const q=applyTaxes(raw,safetyResult??{buy_tax:null,sell_tax:null});
+   if(q.provider==='FOUR_MEME_TOKEN_MANAGER_V2'&&action.side==='BUY')q.min_out_raw=String((BigInt(q.min_out_raw)+999999999n)/1000000000n*1000000000n);
    check(BigInt(q.min_out_raw)>0n&&BigInt(q.out_raw)>=BigInt(q.min_out_raw),'PAPER_INVALID_QUOTE');
    check(Date.now()-q.quoted_at<=c.max_quote_age_ms,'QUOTE_EXPIRED');
    check(Number(q.slippage_bps)<=c.max_slippage_bps,'SLIPPAGE_LIMIT');
@@ -40,9 +41,10 @@ export async function processPaperAction(e,action){
   times.selected_quote_at=Date.now();const quoteMs=performance.now()-quoteStart,executionStart=performance.now();
   const available=await account(e.store,action.mode,c),fee=BigInt(q.fee_raw);check(available.cash-available.reserved>=(action.side==='BUY'?amount:0n)+fee,'PAPER_BALANCE_INSUFFICIENT');
   await assertCopyFence(e.store,action,{paperResearch:true});
+  if(q.provider==='FOUR_MEME_TOKEN_MANAGER_V2'&&action.side==='SELL'){const aligned=BigInt(q.amount_raw);check(BigInt(q.requested_amount_raw)===amount&&aligned>0n&&aligned<=amount&&amount-aligned<1000000000n&&aligned%1000000000n===0n,'FOUR_SELL_QUANTUM_MISMATCH');amount=aligned;}
   const price=Number.isInteger(event.decimals)?(action.side==='BUY'?Number(amount)/1e18/(Number(q.min_out_raw)/10**event.decimals):Number(q.min_out_raw)/1e18/(Number(amount)/10**event.decimals)):null;
   const late=event.history||Date.now()-(event.detected_at??Date.now())>tc.max_signal_age_ms;
-  data={...data,event,quote:q,copy_status:'PAPER_'+action.side+'_EXECUTED',execution_success:true,detection_success:true,route_errors:q.route_errors??[],quote_attempts:attempts,timings:times,paper_model:{source:'OWN_CURRENT_ROUTE_QUOTE',output:'MINIMUM_QUOTED_OUTPUT',gas:'ESTIMATED',tax:q.tax_classification,atomic_execution_verified:false,route_limitation:q.live_block??null,sell_sizing:'EXACT_RAW_PROPORTION_FLOORED',unknown_tax_assumption:q.tax_classification==='UNKNOWN_TAX'?'Quoted output does not establish actual proceeds after unknown transfer taxes':null,historical:!!event.history,late_research:!!late,not_an_onchain_fill:true},comparison:{our_price_bnb:price,target_price_bnb:event.price_quote??null,price_gap_pct:price&&event.price_quote?(price/event.price_quote-1)*100:null},quote_ms:quoteMs};
+  data={...data,event,quote:q,copy_status:'PAPER_'+action.side+'_EXECUTED',execution_success:true,detection_success:true,route_errors:q.route_errors??[],quote_attempts:attempts,timings:times,paper_model:{source:'OWN_CURRENT_ROUTE_QUOTE',output:'MINIMUM_QUOTED_OUTPUT',gas:'ESTIMATED',tax:q.tax_classification,atomic_execution_verified:false,route_limitation:q.live_block??null,sell_sizing:q.provider==='FOUR_MEME_TOKEN_MANAGER_V2'?'RAW_PROPORTION_THEN_PROTOCOL_QUANTUM_DUST_RETAINED':'EXACT_RAW_PROPORTION_FLOORED',unknown_tax_assumption:q.tax_classification==='UNKNOWN_TAX'?'Quoted output does not establish actual proceeds after unknown transfer taxes':null,historical:!!event.history,late_research:!!late,not_an_onchain_fill:true},comparison:{our_price_bnb:price,target_price_bnb:event.price_quote??null,price_gap_pct:price&&event.price_quote?(price/event.price_quote-1)*100:null},quote_ms:quoteMs};
   await e.updateAction(action,'PROCESSING',data,null,{amount:String(amount)});action.data=encode(data);
   check(await applyFill(e.store,action,{inputRaw:String(amount),outputRaw:q.min_out_raw,feeRaw:q.fee_raw,markPrice:price}),'COPY_STOPPED_BEFORE_FILL');
   times.paper_fill_at=Date.now();times.paper_execution_at=times.paper_fill_at;const fillMono=performance.now(),processMs=fillMono-start;

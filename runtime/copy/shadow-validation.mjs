@@ -1,3 +1,4 @@
+import {advancedShadow,advancedProviders} from './advanced-shadow.mjs';
 import {BSC,FACTORY,ERC20,hex,addr,check,cleanError} from '../../core/copy/common.mjs';
 import {saveProfile} from '../../core/copy/latency-profile.mjs';
 import {classifySimulationFailure} from '../../core/copy/simulation-failure.mjs';
@@ -39,9 +40,10 @@ export async function validateNetBuy(e,event,template,c){
 }
 export async function compareValidatedShadow(e,action,event,q,c){
  const started=performance.now();let result;
- if(action.side==='BUY')result=await validateNetBuy(e,event,q,c);
+ if(advancedProviders.has(q.provider))result=await advancedShadow(async(m,p)=>(await shadowRead(e,m,p)).result,event,q,c);
+ else if(action.side==='BUY')result=await validateNetBuy(e,event,q,c);
  else try{const template=await atomicShadowTemplate(e,q,c);result=await validateSeededSell(e,event,template,c,{exactAmountRaw:q.amount_raw,seedBnbRaw:String(BigInt(q.out_raw)*2n)});}
  catch(error){result={status:'FAILED',side:'SELL',target_hash:event.hash,token:event.token,error:cleanError(error),failure:classifySimulationFailure(error,{stage:'SHADOW_SELL',token:event.token,route:q.route}),simulation:{status:'FAIL'},signed:false,broadcast:false};}
  const origin=e.eventClocks?.get(event.hash);result={...result,side:action.side,paper_action_id:action.id,paper_quote:q,private_key_used:false,signed:false,broadcast:false};
- await saveProfile(e.store,action.event_id,{shadow:result,wall:{shadow_finished_at:Date.now()},stages:{SHADOW_PROCESS:performance.now()-started,TOTAL_SHADOW_REACTION:origin?.boot===e.boot&&Number.isFinite(origin?.mono)?performance.now()-origin.mono:null}});return result;
+ await saveProfile(e.store,action.event_id,{shadow:result,wall:{shadow_finished_at:Date.now()},stages:{...(Number.isFinite(result.build_ms)?{SHADOW_BUILD:result.build_ms}:{}),...(Number.isFinite(result.simulation_ms)?{SIMULATION:result.simulation_ms}:{}),SHADOW_PROCESS:performance.now()-started,TOTAL_SHADOW_REACTION:origin?.boot===e.boot&&Number.isFinite(origin?.mono)?performance.now()-origin.mono:null}});return result;
 }

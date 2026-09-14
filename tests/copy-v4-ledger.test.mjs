@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Store} from '../core/store.mjs';
+import {sqliteDriver} from '../runtime/sqlite.mjs';
+import {CopyEngine} from '../runtime/copy/engine.mjs';
+import {TARGET,targetDefaults} from '../core/copy/schema.mjs';
+import {fourSellAmount} from '../runtime/copy/four-meme.mjs';
+import {applyFill} from '../core/copy/execution-policy.mjs';
+const token='0x1111111111111111111111111111111111111111';
+test('Four PAPER partial sale retains quantum dust, cost basis and exactly-once ledger',async t=>{
+ const db=sqliteDriver(':memory:'),s=new Store(db);await s.init();t.after(()=>db.close());
+ const c={...await s.setting('copy_config'),enabled:true,paused:false,live_enabled:false};await s.set('copy_config',c);await s.set('engine_desired','RUNNING');
+ await s.run('UPDATE copy_targets SET config=? WHERE id=?',JSON.stringify({...targetDefaults,mode:'PAPER',exit_mode:'MIRROR_EXIT_PCT'}),TARGET);
+ const total=48420733332211000000000n,cost=2000000000000001n,amount=fourSellAmount(total/2n),now=Date.now(),id=TARGET+':PAPER:'+token;
+ await s.run('INSERT INTO copy_positions VALUES (?,?,?,?,?,?,?,?,NULL,?)',id,TARGET,'PAPER',token,String(total),String(cost),'0',now,JSON.stringify({decimals:18}));
+ const event={side:'SELL',token,target_balance_before:'100',quantity_raw:'50',decimals:18,target_at:now};
+ await s.run("INSERT INTO copy_events VALUES ('v4-sell',?,?,1,'block',0,'SELL','CONFIRMED',?,?)",TARGET,'0x'+'a'.repeat(64),now,JSON.stringify(event));
+ await s.run("INSERT INTO copy_actions(id,event_id,target_id,mode,side,token,state,epoch,created_at,updated_at,data) VALUES ('v4-action','v4-sell',?,'PAPER','SELL',?,'PROCESSING',?,?,?,?)",TARGET,token,c.epoch,now,now,JSON.stringify({event}));
+ const e=new CopyEngine(s,{paperOnly:false});e.safety={inspect:async()=>({sell_tax:0,buy_tax:0})};
+ e.routes={quote:async r=>({provider:'FOUR_MEME_TOKEN_MANAGER_V2',side:'SELL',token,requested_amount_raw:String(r.amount),amount_raw:String(fourSellAmount(r.amount)),out_raw:'1000',min_out_raw:'970',fee_raw:'2',slippage_bps:300,quoted_at:Date.now(),tax_adjusted:true})};
+ await e.processAction(await s.get("SELECT * FROM copy_actions WHERE id='v4-action'"));
+ const p=await s.get('SELECT * FROM copy_positions WHERE id=?',id),a=await s.get("SELECT * FROM copy_actions WHERE id='v4-action'");
+ assert.equal(a.state,'FILLED',a.error);assert.equal(BigInt(p.quantity_raw),total-amount);assert.equal(BigInt(p.cost_raw),cost-cost*amount/total);assert.equal(p.closed_at,null);
+ const fill=JSON.parse(a.data).fill;assert.equal(fill.input_raw,String(amount));assert.equal(fill.price_bnb,970/Number(amount));
+ assert.equal(await applyFill(s,a,{inputRaw:String(amount),outputRaw:'970',feeRaw:'2'}),false);
+ assert.equal((await s.get('SELECT COUNT(*) n FROM copy_ledger')).n,1);assert.equal((await s.setting('copy_config')).live_enabled,false);
+});

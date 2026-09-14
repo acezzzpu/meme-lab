@@ -1,0 +1,351 @@
+{
+  "source_sha256": "437a5dfe30062e3f4c9ada37a63e114966aacc2d5237db36a1cc9ddd0d3c8b63",
+  "fixtures": [
+    {
+      "id": "R1",
+      "target_tx": "0x0cb3697296c8b172befc9d670f0fcb7c206001555398601dbf28182e99beaf21",
+      "token": "0x4c43c32f5c2fcefb7449cb67c749508c44914444",
+      "symbol": "CTRL",
+      "block": 121401393,
+      "target_receipt_status": "0x1",
+      "target_router": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "target_selector": "0x4d819a2a",
+      "router_brand": "UNVERIFIED_CUSTOM_ROUTER",
+      "protocol": "FOUR_MEME_TOKEN_MANAGER_V2",
+      "path": [
+        "0x0000000000000000000000000000000000000000",
+        "0x4c43c32f5c2fcefb7449cb67c749508c44914444"
+      ],
+      "primary_category": "MISSING_ADAPTER",
+      "router_errors": [
+        {
+          "provider": "PANCAKE_V2",
+          "error": "NO_PANCAKE_V2_ROUTE",
+          "ms": 338.8350980002433
+        },
+        {
+          "provider": "PANCAKE_SMART",
+          "error": "NO_AUTHENTICATED_V3_ROUTE_HINT",
+          "ms": 1946.476625001058
+        },
+        {
+          "provider": "PAPER_DEX_PATH",
+          "error": "NO_PAPER_POOL_CANDIDATES",
+          "ms": 2.0907639991492033
+        }
+      ],
+      "flap": {
+        "selected_by_code": false,
+        "reason": "NO_FLAP_PORTAL_HINT"
+      },
+      "reproducibility": {
+        "method": "eth_simulateV1 balanceOf -> custom router swap -> balanceOf",
+        "simulated_wallet": "0x00000000000000000000000000000000b0bc0f56",
+        "funds_override_bnb": "0.3",
+        "buy_amount_bnb": "0.002",
+        "minimum_output_raw": "1",
+        "parent_block": 121401393,
+        "timestamp": "target_at seconds + 1",
+        "swap_status": "0x1",
+        "credited_raw": "47936583684768000000000",
+        "gas_used_hex": "0x4ba68",
+        "signed": false,
+        "broadcast": false,
+        "limitations": "Reproduced on the state at the end of the target block with the target calldata path and modified amount/minimum. Not exact intra-block state, real wallet permissions, production slippage, profitable fill, SELL or LIVE validation."
+      },
+      "other_engine_adapter_executable": "NONE_VERIFIED; optional 0x adapter has no contemporaneous quote evidence and is not independently LIVE validated",
+      "external_alternative": "Four.meme TokenManager2 integration is an existing protocol alternative. Only the target custom router was used for the historical reproduction.",
+      "pools": [
+        {
+          "address": "0x5c952063c7fc8610ffdb798152d69f0b9550762b",
+          "role": "Four.meme TokenManager2 bonding curve; no separate authenticated AMM pool at observed path"
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "target_tx": "0x5a34dff8cc40eb5d63d71a08fefa896d45cd48bbc84c3a57fb6ea91e3ffa37db",
+      "token": "0x4c43c32f5c2fcefb7449cb67c749508c44914444",
+      "symbol": "CTRL",
+      "block": 121401650,
+      "target_receipt_status": "0x1",
+      "target_router": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "target_selector": "0x4d819a2a",
+      "router_brand": "UNVERIFIED_CUSTOM_ROUTER",
+      "protocol": "FOUR_MEME_TOKEN_MANAGER_V2",
+      "path": [
+        "0x0000000000000000000000000000000000000000",
+        "0x4c43c32f5c2fcefb7449cb67c749508c44914444"
+      ],
+      "primary_category": "MISSING_ADAPTER",
+      "router_errors": [
+        {
+          "provider": "PANCAKE_V2",
+          "error": "NO_PANCAKE_V2_ROUTE",
+          "ms": 320.3921530004591
+        },
+        {
+          "provider": "PANCAKE_SMART",
+          "error": "NO_AUTHENTICATED_V3_ROUTE_HINT",
+          "ms": 1486.688973998651
+        },
+        {
+          "provider": "PAPER_DEX_PATH",
+          "error": "NO_PAPER_POOL_CANDIDATES",
+          "ms": 2.121483998373151
+        }
+      ],
+      "flap": {
+        "selected_by_code": false,
+        "reason": "NO_FLAP_PORTAL_HINT"
+      },
+      "reproducibility": {
+        "method": "eth_simulateV1 balanceOf -> custom router swap -> balanceOf",
+        "simulated_wallet": "0x00000000000000000000000000000000b0bc0f56",
+        "funds_override_bnb": "0.3",
+        "buy_amount_bnb": "0.002",
+        "minimum_output_raw": "1",
+        "parent_block": 121401650,
+        "timestamp": "target_at seconds + 1",
+        "swap_status": "0x1",
+        "credited_raw": "79060204263895000000000",
+        "gas_used_hex": "0x4ba68",
+        "signed": false,
+        "broadcast": false,
+        "limitations": "Reproduced on the state at the end of the target block with the target calldata path and modified amount/minimum. Not exact intra-block state, real wallet permissions, production slippage, profitable fill, SELL or LIVE validation."
+      },
+      "other_engine_adapter_executable": "NONE_VERIFIED; optional 0x adapter has no contemporaneous quote evidence and is not independently LIVE validated",
+      "external_alternative": "Four.meme TokenManager2 integration is an existing protocol alternative. Only the target custom router was used for the historical reproduction.",
+      "pools": [
+        {
+          "address": "0x5c952063c7fc8610ffdb798152d69f0b9550762b",
+          "role": "Four.meme TokenManager2 bonding curve; no separate authenticated AMM pool at observed path"
+        }
+      ]
+    },
+    {
+      "id": "R3",
+      "target_tx": "0x758582831138165c44680c068a312ea23567785e558cfe9598df16a43b6d4d6b",
+      "token": "0x2ac8807929562d3704ec2f3bc72fc37a91f27777",
+      "symbol": "黑神话：巨兽",
+      "block": 121406770,
+      "target_receipt_status": "0x1",
+      "target_router": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "target_selector": "0x4d819a2a",
+      "router_brand": "UNVERIFIED_CUSTOM_ROUTER",
+      "protocol": "PANCAKE_V2 + PANCAKE_V3 + FLAP_PORTAL",
+      "path": [
+        "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+        "0x55d398326f99059ff775485246999027b3197955",
+        "0xbeea1d618e533a387d941f58a7d4c9b7bd377777",
+        "0x2ac8807929562d3704ec2f3bc72fc37a91f27777"
+      ],
+      "primary_category": "MISSING_POOL_DISCOVERY_OR_ROUTE_COMPOSITION",
+      "router_errors": [
+        {
+          "provider": "PANCAKE_V2",
+          "error": "NO_PANCAKE_V2_ROUTE",
+          "ms": 697.9258019999834
+        },
+        {
+          "provider": "PANCAKE_SMART",
+          "error": "NO_AUTHENTICATED_V3_ROUTE_HINT",
+          "ms": 2417.310591000016
+        },
+        {
+          "provider": "PAPER_DEX_PATH",
+          "error": "NO_AUTHENTICATED_PAPER_PATH",
+          "ms": 824.6013969999622
+        }
+      ],
+      "flap": {
+        "selected_by_code": true,
+        "original_error": "NOT_PRESERVED_WHEN_FALLBACK_ALSO_FAILS",
+        "historical_native_quote_error": "0x6a855977",
+        "decoded_error": "NativeToQuoteSwapNotSupported()",
+        "quote_token": "0xbeea1d618e533a387d941f58a7d4c9b7bd377777",
+        "native_to_quote_enabled": false,
+        "status": 1,
+        "buy_tax_bps": "0",
+        "sell_tax_bps": "100"
+      },
+      "reproducibility": {
+        "method": "eth_simulateV1 balanceOf -> custom router swap -> balanceOf",
+        "simulated_wallet": "0x00000000000000000000000000000000b0bc0f56",
+        "funds_override_bnb": "0.3",
+        "buy_amount_bnb": "0.002",
+        "minimum_output_raw": "1",
+        "parent_block": 121406770,
+        "timestamp": "target_at seconds + 1",
+        "swap_status": "0x1",
+        "credited_raw": "230935936401396934033846",
+        "gas_used_hex": "0xa1526",
+        "signed": false,
+        "broadcast": false,
+        "limitations": "Reproduced on the state at the end of the target block with the target calldata path and modified amount/minimum. Not exact intra-block state, real wallet permissions, production slippage, profitable fill, SELL or LIVE validation."
+      },
+      "other_engine_adapter_executable": "NONE_VERIFIED; optional 0x adapter has no contemporaneous quote evidence and is not independently LIVE validated",
+      "external_alternative": "Target custom router reproduced the full composed path. Pancake plus standalone Flap adapters do not currently compose it atomically.",
+      "pools": [
+        {
+          "address": "0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae",
+          "role": "Pancake V2 WBNB/USDT, receipt swap"
+        },
+        {
+          "address": "0xe5ae318389b8d6d09370a675479c64862152d126",
+          "role": "Pancake V3 USDT/BEEA, receipt swap, fee 2500"
+        },
+        {
+          "address": "0x13471edfc6905f1e2ddbaa65020c2932ac2e18b0",
+          "role": "Flap-associated intermediate contract emitting V2-style Swap; token0=target,token1=BEEA; factory() reverts; not authenticated as Pancake V2"
+        },
+        {
+          "address": "0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0",
+          "role": "Flap Portal final hop; token tradable on BEEA curve"
+        }
+      ]
+    },
+    {
+      "id": "R4",
+      "target_tx": "0x30fc4a82d7333b4a01a59095a932381c137216feb31f575c5832e901f03106d7",
+      "token": "0x841bf2256eb6d4d04d2a41a86dc003b9643b4444",
+      "symbol": "🤏",
+      "block": 121409845,
+      "target_receipt_status": "0x1",
+      "target_router": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "target_selector": "0x4d819a2a",
+      "router_brand": "UNVERIFIED_CUSTOM_ROUTER",
+      "protocol": "FOUR_MEME_TOKEN_MANAGER_V2",
+      "path": [
+        "0x0000000000000000000000000000000000000000",
+        "0x841bf2256eb6d4d04d2a41a86dc003b9643b4444"
+      ],
+      "primary_category": "MISSING_ADAPTER",
+      "router_errors": [
+        {
+          "provider": "PANCAKE_V2",
+          "error": "NO_PANCAKE_V2_ROUTE",
+          "ms": 477.82429600018077
+        },
+        {
+          "provider": "PANCAKE_SMART",
+          "error": "NO_AUTHENTICATED_V3_ROUTE_HINT",
+          "ms": 1717.6145219998434
+        },
+        {
+          "provider": "PAPER_DEX_PATH",
+          "error": "NO_PAPER_POOL_CANDIDATES",
+          "ms": 1.9977320001926273
+        }
+      ],
+      "flap": {
+        "selected_by_code": false,
+        "reason": "NO_FLAP_PORTAL_HINT"
+      },
+      "reproducibility": {
+        "method": "eth_simulateV1 balanceOf -> custom router swap -> balanceOf",
+        "simulated_wallet": "0x00000000000000000000000000000000b0bc0f56",
+        "funds_override_bnb": "0.3",
+        "buy_amount_bnb": "0.002",
+        "minimum_output_raw": "1",
+        "parent_block": 121409845,
+        "timestamp": "target_at seconds + 1",
+        "swap_status": "0x1",
+        "credited_raw": "145461954615994000000000",
+        "gas_used_hex": "0x4ba68",
+        "signed": false,
+        "broadcast": false,
+        "limitations": "Reproduced on the state at the end of the target block with the target calldata path and modified amount/minimum. Not exact intra-block state, real wallet permissions, production slippage, profitable fill, SELL or LIVE validation."
+      },
+      "other_engine_adapter_executable": "NONE_VERIFIED; optional 0x adapter has no contemporaneous quote evidence and is not independently LIVE validated",
+      "external_alternative": "Four.meme TokenManager2 integration is an existing protocol alternative. Only the target custom router was used for the historical reproduction.",
+      "pools": [
+        {
+          "address": "0x5c952063c7fc8610ffdb798152d69f0b9550762b",
+          "role": "Four.meme TokenManager2 bonding curve; no separate authenticated AMM pool at observed path"
+        }
+      ]
+    },
+    {
+      "id": "R5",
+      "target_tx": "0xd37867f4ad8d225c1b0b76a3c2919461ead98fd206e3f90587247868263bc5cb",
+      "token": "0xebdde33509ffe09257e5bf86c6a8cdee38bd93d7",
+      "symbol": "ASTI",
+      "block": 121466166,
+      "target_receipt_status": "0x1",
+      "target_router": "0x1de460f363af910f51726def188f9004276bf4bc",
+      "target_selector": "0x4d819a2a",
+      "router_brand": "UNVERIFIED_CUSTOM_ROUTER",
+      "protocol": "UNISWAP_V4",
+      "path": [
+        "0x0000000000000000000000000000000000000000",
+        "0xebdde33509ffe09257e5bf86c6a8cdee38bd93d7"
+      ],
+      "primary_category": "MISSING_ADAPTER",
+      "router_errors": [
+        {
+          "provider": "PANCAKE_V2",
+          "error": "NO_PANCAKE_V2_ROUTE",
+          "ms": 399.55583699792624
+        },
+        {
+          "provider": "PANCAKE_SMART",
+          "error": "SMART_NO_QUOTE",
+          "ms": 2323.262731999159
+        },
+        {
+          "provider": "PAPER_DEX_PATH",
+          "error": "NO_PAPER_POOL_CANDIDATES",
+          "ms": 3.0862039998173714
+        }
+      ],
+      "flap": {
+        "selected_by_code": false,
+        "reason": "NO_FLAP_PORTAL_HINT"
+      },
+      "reproducibility": {
+        "method": "eth_simulateV1 balanceOf -> custom router swap -> balanceOf",
+        "simulated_wallet": "0x00000000000000000000000000000000b0bc0f56",
+        "funds_override_bnb": "0.3",
+        "buy_amount_bnb": "0.002",
+        "minimum_output_raw": "1",
+        "parent_block": 121466166,
+        "timestamp": "target_at seconds + 1",
+        "swap_status": "0x1",
+        "credited_raw": "18838187604646967614131",
+        "gas_used_hex": "0x3253e",
+        "signed": false,
+        "broadcast": false,
+        "limitations": "Reproduced on the state at the end of the target block with the target calldata path and modified amount/minimum. Not exact intra-block state, real wallet permissions, production slippage, profitable fill, SELL or LIVE validation."
+      },
+      "other_engine_adapter_executable": "NONE_VERIFIED; optional 0x adapter has no contemporaneous quote evidence and is not independently LIVE validated",
+      "external_alternative": "Uniswap Universal Router supports v4 on BNB; this exact historical trade was tested only through the target custom router.",
+      "pools": [
+        {
+          "address": "0x28e2ea090877bf75740558f6bfb36a5ffee9e9df",
+          "role": "Uniswap v4 PoolManager singleton",
+          "pool_id": "0x7814faabf27089b9db709c14c64b80c6ede56228e01ae6bf38c8985c9e4bb246",
+          "pool_key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0xebdde33509ffe09257e5bf86c6a8cdee38bd93d7",
+            "fee": 70000,
+            "tickSpacing": 700,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "pool_id_verified": "keccak256(abi.encode(PoolKey)) matches receipt indexed topic"
+        }
+      ],
+      "smart_rpc_errors": {
+        "method": "quoteExactInput",
+        "contract": "0xb048bbc1ee6b733fffcfb9e9cef7375518e25997",
+        "providers": [
+          "free-publicnode",
+          "free-nodereal",
+          "free-bnb"
+        ],
+        "error": "RPC_3: execution reverted: Unexpected error",
+        "revert_data": "Redacted as [data] or absent in persisted profile; exact deeper selector unavailable"
+      }
+    }
+  ]
+}

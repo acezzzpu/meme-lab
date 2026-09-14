@@ -1,6 +1,6 @@
 // Own the response lifecycle before the first await. No asynchronous producer
 // may write without checking the response and its connection again.
-export async function streamSse(req,res,{initialCursor=0,loadCursor,eventsAfter,state,authorized=()=>true,onClose=()=>{},intervalMs=500}){
+export async function streamSse(req,res,{initialCursor=0,loadCursor,eventsAfter,state,authorized=()=>true,onClose=()=>{},intervalMs=500,stateEvent='state'}){
  let cursor=initialCursor,busy=false,closed=false,timer=null,lastSnapshot=0;
  const socket=res.socket;
  const open=()=>!closed&&!req.aborted&&!res.writableEnded&&!res.writableFinished&&!res.destroyed&&!!socket&&!socket.destroyed&&socket.writable!==false;
@@ -22,7 +22,7 @@ export async function streamSse(req,res,{initialCursor=0,loadCursor,eventsAfter,
    for(const event of events){if(!write('id: '+event.id+'\nevent: engine\ndata: '+JSON.stringify(event)+'\n\n'))return;cursor=event.id;}
    if(Date.now()-lastSnapshot>=2000){
     const snapshot=await state();if(!open()){cleanup();return;}
-    if(!write('event: state\ndata: '+JSON.stringify(snapshot)+'\n\n'))return;lastSnapshot=Date.now();
+    if(!write('event: '+stateEvent+'\ndata: '+JSON.stringify(snapshot)+'\n\n'))return;lastSnapshot=Date.now();
    }else if(!events.length&&!write(': keepalive\n\n'))return;
    if(res.writableLength>2*1024*1024)stop();
   }catch{stop();}finally{busy=false;}

@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {mkdtemp,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';
+import {Store} from '../core/store.mjs';import {sqliteDriver} from '../runtime/sqlite.mjs';import {DashboardReader} from '../runtime/dashboard-reader.mjs';import {eventHistory} from '../core/dashboard-history.mjs';
+test('large diagnostic rows stay out of shared current snapshots; history chunks preserve exact evidence',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'meme-v4-dashboard-')),path=join(dir,'test.sqlite'),db=sqliteDriver(path),s=new Store(db);await s.init();const body=JSON.stringify({unicode:'训练',history:'x'.repeat(74000000)});await s.run('INSERT INTO engine_events(at,kind,message,data) VALUES (1,?,?,?)','COPY_RPC_USAGE','diagnostic',body);
+ const reader=new DashboardReader(path);t.after(async()=>{await reader.close();db.close();await rm(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});});
+ const result=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('READER_TIMEOUT')),10000);const poll=setInterval(()=>{try{const value=reader.read();clearInterval(poll);clearTimeout(timer);resolve(value);}catch{}},20);});
+ const size=Buffer.byteLength(JSON.stringify(result));assert.ok(size<65536);assert.ok(!JSON.stringify(result).includes('history'));assert.equal(reader.read(),result);
+ const bootstrap=JSON.parse(await reader.bootstrap());assert.equal(bootstrap.copy.config.live_enabled,false);assert.ok(Buffer.byteLength(JSON.stringify(bootstrap))<65536);assert.deepEqual((await reader.history({limit:1})).rows.map(r=>r.kind),['COPY_RPC_USAGE']);await assert.rejects(()=>reader.history({source:'settings'}),/INVALID_HISTORY_SOURCE/);t.diagnostic('Synthetic current snapshot bytes: '+size);
+ const page=await eventHistory(s,{limit:1});assert.equal(page.rows.length,1);assert.ok(!('data' in page.rows[0]));const chunk=await eventHistory(s,{id:page.rows[0].id});assert.equal(Buffer.from(chunk.chunk,'hex').length,32768);assert.equal(chunk.next_offset,32768);assert.equal((await s.get('SELECT data FROM engine_events')).data,body);
+ assert.equal((await s.get('SELECT COUNT(*) n FROM copy_ledger')).n,0);assert.equal((await s.setting('copy_config')).live_enabled,false);
+});

@@ -1,5 +1,9 @@
 import {BSC,ERC20,TRANSFER,V2_SWAP,V3_SWAP,PANCAKE_V3_SWAP,addr,hex,transferDeltas,sellFraction,cleanError} from '../../core/copy/common.mjs';
 import {hasFlapEvent,flapEvidence,FLAP_PORTAL} from './flap.mjs';
+import {observedDescriptors,OBSERVED_ROUTER} from './mixed-flap.mjs';
+import {poolId,V4_MANAGER} from './uniswap-v4.mjs';
+import {v4ReceiptHints} from './uniswap-v4.mjs';
+import {FOUR_MANAGER} from './four-meme.mjs';
 import {tokenMetadata} from './rpc.mjs';
 
 // Receipt-first economic classification. Router identity never decides whether
@@ -42,6 +46,10 @@ export async function decodeEconomicTarget(rpc,tx,receipt,block,target,{metadata
  Object.assign(out,await metadataTask);
  if(!out.quote_raw){const attributed=flapEvidence(tx,receipt,block,wallet,token,delta);if(!attributed)return {...out,reason:delta<0n?'NATIVE_SELL_PROCEEDS_UNAVAILABLE':'NO_OPPOSING_QUOTE_FLOW'};Object.assign(out,{protocol:'FLAP',quote_token:BSC.wbnb,quote_raw:null,quote_evidence_method:attributed.attribution,quote_estimate:'UNKNOWN_TARGET_NATIVE_PROCEEDS',flap:attributed});}
  if(hasFlapEvent(receipt))out.pools=[{address:FLAP_PORTAL,adapter:'FLAP_PORTAL'}];
+ out.pools.push(...v4ReceiptHints(receipt));
+ const descriptors=tx.to?.toLowerCase()===OBSERVED_ROUTER?observedDescriptors(tx):null;
+ for(const h of descriptors??[]){if(Number(h[0])===2&&addr(h[8])===V4_MANAGER){const key={currency0:addr(h[1])<addr(h[2])?addr(h[1]):addr(h[2]),currency1:addr(h[1])<addr(h[2])?addr(h[2]):addr(h[1]),fee:Number(h[4]),tickSpacing:Number(h[5]),hooks:addr(h[6])};const id=poolId(key);const observed=out.pools.find(p=>p.adapter==='UNISWAP_V4'&&p.pool_id===id);if(observed)observed.pool_key=key;}}
+ if(descriptors?.length>1&&Number(descriptors.at(-1)[0])===6&&hasFlapEvent(receipt))out.pools.push({address:OBSERVED_ROUTER,adapter:'PANCAKE_FLAP_ATOMIC',descriptors});if((receipt.logs??[]).some(l=>l.address?.toLowerCase()===FOUR_MANAGER))out.pools.push({address:FOUR_MANAGER,adapter:'FOUR_MEME_TOKEN_MANAGER_V2'});
  out.side=delta>0n?'BUY':'SELL';out.kind=out.side;
  if(Number.isInteger(out.decimals)&&out.quote_raw)out.price_quote=Number(out.quote_raw)/1e18/(Number(amount)/10**out.decimals);
  if(delta<0n){

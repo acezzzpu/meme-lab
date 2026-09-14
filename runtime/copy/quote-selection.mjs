@@ -11,7 +11,7 @@ export function candidatePriority(provider,request,priority){
 
 // Return the first policy-compatible quote. Cancel slower work instead of waiting
 // for every adapter. This deliberately does not claim the best possible price.
-export async function selectQuote(providers,request,{rpc,live=false,priority=0,allowUnknownImpact=false,validate=q=>q,onQuote=async()=>{},deadlineAt=Date.now()+4000}={}){
+export async function selectQuote(providers,request,{rpc,live=false,priority=0,allowUnknownImpact=false,validate=q=>q,onQuote=async()=>{},deadlineAt=Date.now()+4000,routeTimeoutMs=2500}={}){
  const controllers=providers.map(()=>new AbortController()),attempts=providers.map(p=>({provider:p.id,status:'PENDING'}));
  let timer,finished=false,remaining=providers.length;
  const traces=providers.map(p=>new QuoteTrace(p.id));
@@ -24,7 +24,7 @@ export async function selectQuote(providers,request,{rpc,live=false,priority=0,a
   providers.forEach((provider,i)=>{
    const run=async()=>{
     const started=performance.now();attempts[i].quote_start=Date.now();
-    const work=()=>provider.quote({...request,signal:controllers[i].signal});let raw;try{raw=await (rpc?.withContext?rpc.withContext({quoteTrace:traces[i]},work):work());}finally{traces[i].finished=performance.now();}const q={...raw,quote_profile:traces[i].snapshot()};if(finished)return;
+    const work=()=>provider.quote({...request,signal:controllers[i].signal});let raw,routeTimer;try{raw=await Promise.race([(rpc?.withContext?rpc.withContext({quoteTrace:traces[i]},work):work()),new Promise((_,reject)=>{routeTimer=setTimeout(()=>{const e=Error('PER_ROUTE_QUOTE_TIMEOUT');controllers[i].abort(e);reject(e);},Math.max(1,Math.min(provider.id==='PANCAKE_FLAP_ATOMIC'?6000:routeTimeoutMs,deadlineAt-Date.now())));})]);}finally{clearTimeout(routeTimer);traces[i].finished=performance.now();}const q={...raw,quote_profile:traces[i].snapshot()};if(finished)return;
     attempts[i]={...attempts[i],provider:provider.id,status:'QUOTED',quote_end:Date.now(),measured_quote_ms:performance.now()-started,out_raw:q.out_raw,fee_raw:q.fee_raw,quote_ms:q.quote_ms,impact_pct:q.impact_pct};
     await onQuote(q);if(finished)return;
     if(live||!allowUnknownImpact)check(Number.isFinite(q.impact_pct),'IMPACT_UNKNOWN');check(!live||['PANCAKE_V2','PANCAKE_SMART'].includes(q.provider),'ROUTE_NOT_LIVE_VALIDATED');
