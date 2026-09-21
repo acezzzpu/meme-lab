@@ -119,7 +119,10 @@ export async function blockWork(e,recovery){
  if(recovery&&(!e.options?.enableHistoryWorker||!e.rpc.providers?.some(p=>p.history_dedicated)))return false;
  const filter=recovery?"AND (json_extract(payload,'$.history')=1 OR COALESCE(json_extract(payload,'$.received_at'),0)<?)":"AND json_extract(payload,'$.history') IS NOT 1 AND COALESCE(json_extract(payload,'$.received_at'),0)>=?";
  const order=recovery?"CASE WHEN json_extract(payload,'$.history')=1 THEN 0 ELSE 1 END,json_extract(payload,'$.height') ASC":"json_extract(payload,'$.height') ASC";
- const job=await e.store.get(`SELECT * FROM copy_jobs WHERE kind='BLOCK' AND state='QUEUED' AND available_at<=? ${filter} ORDER BY ${order},available_at LIMIT 1`,Date.now(),e.options.liveBoot??e.boot??0);
+ // A large restart backlog otherwise gets sorted on every block selection.
+ // Preserve eligibility and canonical order while walking the ready index.
+ const source=recovery?'copy_jobs':'copy_jobs INDEXED BY copy_jobs_block_live_ready';
+ const job=await e.store.get(`SELECT * FROM ${source} WHERE kind='BLOCK' AND state='QUEUED' AND available_at<=? ${filter} ORDER BY ${order},available_at LIMIT 1`,Date.now(),e.options.liveBoot??e.boot??0);
  if(!job)return false;
  const claimed=await e.store.run("UPDATE copy_jobs SET state='RUNNING',attempts=attempts+1 WHERE id=? AND state='QUEUED'",job.id);if(!claimed.changes)return false;
  const p=decode(job.payload),legacyHash=job.id.split(':')[2];if(!p.expected_hash&&/^0x[\da-fA-F]{64}$/.test(legacyHash??''))p.expected_hash=legacyHash;
