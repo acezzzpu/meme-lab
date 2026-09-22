@@ -15,14 +15,21 @@ test('a quota rejection during WS chain verification closes the unusable socket 
 
 test('queued recovery reads are paced and urgent reads take the next available start',async()=>{
  const p={id:'p',enabled:true,http_url:'https://unit.invalid',requests_per_second:20};
- const starts=[];
- const rpc=new BscRpc([p],{fetcher:async(_url,{body})=>{starts.push({method:JSON.parse(body).method,at:performance.now()});return new Response(JSON.stringify({result:'0x1'}));}});
+ const starts=[];let release,ready,blocked=0;
+ const gate=new Promise(resolve=>release=resolve),saturated=new Promise(resolve=>ready=resolve);
+ const rpc=new BscRpc([p],{maxConcurrent:2,fetcher:async(_url,{body})=>{
+  const method=JSON.parse(body).method;starts.push({method,at:performance.now()});
+  if(['seed','blocker'].includes(method)){if(++blocked===2)ready();await gate;}
+  return new Response(JSON.stringify({result:'0x1'}));
+ }});
  rpc.verified.add('p');
- await rpc.call('seed');
+ const initial=[rpc.call('seed'),rpc.call('blocker')];await saturated;
+ // Explicitly fill both slots before queueing: a slow seed response must not
+ // allow background-a to start before the urgent request even exists.
  const background=rpc.withContext({priority:-2},()=>Promise.all([rpc.call('background-a'),rpc.call('background-b')]));
- const urgent=rpc.withContext({priority:1},()=>rpc.call('urgent'));
- await Promise.all([background,urgent]);
- assert.deepEqual(starts.map(s=>s.method),['seed','urgent','background-a','background-b']);
+ const urgent=rpc.withContext({priority:1},()=>rpc.call('urgent'));release();
+ await Promise.all([...initial,background,urgent]);
+ assert.deepEqual(starts.map(s=>s.method),['seed','blocker','urgent','background-a','background-b']);
  for(let i=1;i<starts.length;i++)assert.ok(starts[i].at-starts[i-1].at>=45,'A backlog must not burst above the configured rate');
 });
 

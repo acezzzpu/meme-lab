@@ -112,7 +112,7 @@ export async function commitBlock(e,p,b){
  await recoverGaps(e,head,!!p.history);
 }
 
-export async function blockWork(e,recovery){
+export async function blockWork(e,recovery,preferHead=false){
  if(e.closed||!e.rpc)return false;
  const config=await e.store.setting('copy_config');
  if(!config.enabled||await e.store.setting('engine_desired')!=='RUNNING'||await e.store.setting('copy_reconciliation_required'))return false;
@@ -122,7 +122,16 @@ export async function blockWork(e,recovery){
  // A large restart backlog otherwise gets sorted on every block selection.
  // Preserve eligibility and canonical order while walking the ready index.
  const source=recovery?'copy_jobs':'copy_jobs INDEXED BY copy_jobs_block_live_ready';
- const job=await e.store.get(`SELECT * FROM ${source} WHERE kind='BLOCK' AND state='QUEUED' AND available_at<=? ${filter} ORDER BY ${order},available_at LIMIT 1`,Date.now(),e.options.liveBoot??e.boot??0);
+ const now=Date.now(),boot=e.options.liveBoot??e.boot??0;
+ const select=range=>`SELECT * FROM ${source} WHERE kind='BLOCK' AND state='QUEUED' AND available_at<=? ${filter} ${range} ORDER BY ${order},available_at LIMIT 1`;
+ let job;
+ if(preferHead&&!recovery){
+  // One existing lane keeps observing current blocks while the other recovers
+  // the persisted frontier. Neither lane advances the cursor over a gap.
+  const head=await e.store.setting('copy_observed_head');
+  if(Number.isSafeInteger(head))job=await e.store.get(select("AND json_extract(payload,'$.height')>=?"),now,boot,head-32);
+ }
+ job??=await e.store.get(select(''),now,boot);
  if(!job)return false;
  const claimed=await e.store.run("UPDATE copy_jobs SET state='RUNNING',attempts=attempts+1 WHERE id=? AND state='QUEUED'",job.id);if(!claimed.changes)return false;
  const p=decode(job.payload),legacyHash=job.id.split(':')[2];if(!p.expected_hash&&/^0x[\da-fA-F]{64}$/.test(legacyHash??''))p.expected_hash=legacyHash;
